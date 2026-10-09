@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="dark" data-accent="lime">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121212">
+<title>Fitness Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800&display=swap&subset=cyrillic" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  --bg:#121212; --card:rgba(255,255,255,.055); --card-b:rgba(255,255,255,.11);
+  --text:#f2f2ee; --muted:#9a9a94; --acc:#CCFF00; --acc-ink:#CCFF00; --on-acc:#0b0b0b;
+  --body:rgba(255,255,255,.14); --muscle-off:rgba(255,255,255,.09);
+  --glow:rgba(204,255,0,.13); --glow2:rgba(120,140,255,.08); --panel:#1b1b1b;
+}
+[data-accent="orange"]{--acc:#FF5500;--acc-ink:#FF5500;--glow:rgba(255,85,0,.16)}
+[data-theme="light"]{
+  --bg:#f3f1ea; --card:rgba(255,255,255,.72); --card-b:rgba(0,0,0,.12);
+  --text:#121212; --muted:#5f5f58; --acc-ink:#4d6300;
+  --body:rgba(0,0,0,.15); --muscle-off:rgba(0,0,0,.08); --glow2:rgba(80,100,255,.06); --panel:#fff;
+}
+[data-theme="light"][data-accent="orange"]{--acc-ink:#c13e00}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+.app{font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.5;margin:0;transition:background .3s,color .3s}
+.app::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(620px 420px at 88% -5%,var(--glow),transparent 70%),radial-gradient(520px 420px at -10% 45%,var(--glow2),transparent 70%)}
+.display{font-family:'Unbounded','Manrope',sans-serif;letter-spacing:-.02em}
+button{font-family:inherit;color:inherit;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+i[data-lucide],svg.lucide{width:1.15em;height:1.15em;stroke-width:2.2;flex:none}
+
+/* layout */
+.topbar{position:sticky;top:0;z-index:40;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid var(--card-b)}
+.topbar-in{max-width:1080px;margin:0 auto;padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:.6rem;font-weight:800}
+.logo-mark{width:36px;height:36px;border-radius:11px;background:var(--acc);color:var(--on-acc);display:grid;place-items:center;transform:rotate(-6deg)}
+.logo b{font-family:'Unbounded',sans-serif;font-size:1rem;letter-spacing:-.02em}
+.icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid var(--card-b);background:var(--card);display:grid;place-items:center;transition:.2s}
+.icon-btn:hover{border-color:var(--acc);color:var(--acc-ink);transform:translateY(-2px)}
+.tools{display:flex;align-items:center;gap:.5rem}
+.seg{display:inline-flex;padding:3px;border-radius:14px;border:1px solid var(--card-b);background:var(--card);gap:2px}
+.seg-b{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .7rem;border:0;border-radius:11px;background:transparent;font-weight:800;font-size:.8rem;color:var(--muted);transition:.2s}
+.seg-b:hover{color:var(--text)}
+.seg-b.on{background:var(--acc);color:var(--on-acc);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.seg-b.dot{padding:.45rem}
+.seg-b .sw{display:block;width:18px;height:18px;border-radius:50%;border:2px solid rgba(0,0,0,.35)}
+.seg-b.dot.on{box-shadow:0 0 0 2px var(--acc)}
+.seg-b.dot.on{background:transparent}
+@media(max-width:560px){.topbar-in{flex-wrap:wrap;row-gap:.5rem}.tools{width:100%;justify-content:space-between}.seg-b{padding:.5rem .75rem}.seg-b.dot{padding:.5rem}.tabs{top:104px}}
+.fab-txt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;text-align:left}
+.fab-txt b{font-size:.9rem}
+.fab-txt em{font-style:normal;font-size:.7rem;font-weight:700;opacity:.75}
+.container{max-width:1080px;margin:0 auto;padding:1.2rem 1rem 7rem}
+.glass{background:var(--card);border:1px solid var(--card-b);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:20px}
+
+/* stepper */
+.stepper{position:relative;display:grid;grid-template-columns:repeat(3,1fr);margin-bottom:1.6rem}
+.st-line{position:absolute;top:19px;left:16.66%;width:66.66%;height:3px;background:var(--card-b);border-radius:3px;overflow:hidden}
+.st-line i{display:block;height:100%;background:var(--acc);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.st{position:relative;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:0}
+.st span{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--bg);border:2px solid var(--card-b);color:var(--muted);transition:.3s}
+.st em{font-style:normal;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.st.cur span{background:var(--acc);border-color:var(--acc);color:var(--on-acc);box-shadow:0 0 0 6px color-mix(in srgb,var(--acc) 22%,transparent)}
+.st.cur em{color:var(--text)}
+.st.done span{border-color:var(--acc);color:var(--acc-ink)}
+.st:not(:disabled):hover span{transform:scale(1.08)}
+
+/* typography */
+.h1{font-family:'Unbounded',sans-serif;font-weight:800;font-size:clamp(1.7rem,6.2vw,3rem);line-height:1.05;letter-spacing:-.03em;margin:0}
+.h2{font-family:'Unbounded',sans-serif;font-weight:700;font-size:clamp(1.2rem,4.2vw,1.7rem);line-height:1.15;margin:0}
+.acc{color:var(--acc-ink)}
+.lead{color:var(--muted);font-size:1rem;max-width:560px;margin:.8rem 0 0}
+.kicker{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--acc-ink)}
+.sec-title{font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:1.6rem 0 .7rem;display:flex;align-items:center;gap:.5rem}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--card-b)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem 1.3rem;border-radius:14px;font-weight:800;border:2px solid transparent;transition:transform .15s,box-shadow .15s,background .2s,border-color .2s;font-size:.95rem}
+.btn-primary{background:var(--acc);color:var(--on-acc)}
+.btn-primary:not(:disabled):hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 var(--text)}
+.btn-primary:not(:disabled):active{transform:none;box-shadow:none}
+.btn-ghost{background:transparent;border-color:var(--card-b);color:var(--text)}
+.btn-ghost:hover{border-color:var(--acc);color:var(--acc-ink);transform:translateY(-2px)}
+.btn-sm{padding:.55rem .85rem;font-size:.82rem;border-radius:11px}
+.nav-row{display:flex;justify-content:space-between;align-items:center;gap:.8rem;margin-top:2rem}
+
+/* options */
+.opt{position:relative;display:flex;align-items:center;gap:.85rem;text-align:left;padding:1rem 1.1rem;border-radius:18px;border:2px solid var(--card-b);background:var(--card);transition:.2s;width:100%}
+.opt:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--acc) 60%,var(--card-b))}
+.opt .oi{width:46px;height:46px;border-radius:14px;background:var(--body);display:grid;place-items:center;font-size:1.3rem;flex:none;transition:.2s}
+.opt .ot{display:flex;flex-direction:column;min-width:0}
+.opt .ot b{font-weight:800}
+.opt .ot small{color:var(--muted);font-size:.8rem;line-height:1.35;margin-top:.1rem}
+.opt .ck{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--acc);color:var(--on-acc);display:grid;place-items:center;font-size:.7rem;opacity:0;transform:scale(.4);transition:.2s}
+.opt.sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 11%,var(--card))}
+.opt.sel .oi{background:var(--acc);color:var(--on-acc)}
+.opt.sel .ck{opacity:1;transform:none}
+.opt.big{flex-direction:column;align-items:flex-start;padding:1.5rem;gap:1rem;min-height:190px;justify-content:space-between}
+.opt.big .oi{width:64px;height:64px;font-size:1.9rem;border-radius:18px}
+.opt.big .ot b{font-size:1.35rem;font-family:'Unbounded',sans-serif}
+.opt.locked{opacity:.85;cursor:default}
+.opt.locked:hover{transform:none}
+.opt.sm{padding:.7rem .9rem;border-radius:14px}
+.opt.sm .oi{width:34px;height:34px;font-size:1rem;border-radius:10px}
+.pill{min-width:58px;padding:.7rem 1rem;border-radius:13px;border:2px solid var(--card-b);background:var(--card);font-weight:800;transition:.2s}
+.pill:hover{border-color:var(--acc);transform:translateY(-2px)}
+.pill.sel{background:var(--acc);color:var(--on-acc);border-color:var(--acc)}
+.pills{display:flex;flex-wrap:wrap;gap:.5rem}
+.grid2{display:grid;gap:.8rem;grid-template-columns:1fr}
+.grid3{display:grid;gap:.8rem;grid-template-columns:1fr}
+.grid4{display:grid;gap:.8rem;grid-template-columns:1fr 1fr}
+@media(min-width:640px){.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:repeat(3,1fr)}.grid4{grid-template-columns:repeat(4,1fr)}}
+
+/* fields */
+.field{display:flex;flex-direction:column;gap:.35rem}
+.field label{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.inwrap{position:relative}
+.inwrap input,.txt{width:100%;background:var(--card);border:2px solid var(--card-b);border-radius:14px;padding:.85rem 3.2rem .85rem 1rem;font:inherit;font-weight:700;font-size:1.05rem;color:var(--text);outline:none;transition:.2s}
+.txt{padding:.85rem 1rem;font-weight:500;font-size:.95rem}
+.inwrap input:focus,.txt:focus{border-color:var(--acc);box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 18%,transparent)}
+.inwrap span{position:absolute;right:1rem;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;font-size:.85rem;pointer-events:none}
+.field.invalid input{border-color:#ff4d4d}
+.err{color:#ff6b6b;font-size:.78rem;font-weight:700;min-height:0}
+.err:empty{display:none}
+
+/* hero / loader */
+.hero{margin-bottom:1.6rem}
+.banner{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;justify-content:space-between;padding:1rem 1.2rem;margin-bottom:1.4rem;border-color:var(--acc)}
+.panel-in{padding:1.1rem;margin-top:1rem}
+.loader{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;min-height:55vh;text-align:center}
+.loader .bell{width:92px;height:92px;border-radius:26px;background:var(--acc);color:var(--on-acc);display:grid;place-items:center;font-size:2.6rem;animation:lift 1s ease-in-out infinite}
+@keyframes lift{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-16px) rotate(6deg)}}
+.enter{animation:enter .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* results */
+.res-head{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:flex-start;padding:1.3rem}
+.head-actions{display:flex;flex-wrap:wrap;gap:.5rem}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:.9rem}
+@media(min-width:720px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{padding:.9rem 1rem}
+.stat small{display:block;color:var(--muted);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.stat b{font-family:'Unbounded',sans-serif;font-size:1.35rem}
+.stat em{display:block;font-style:normal;color:var(--muted);font-size:.75rem}
+.note{padding:.8rem 1rem;border-radius:14px;border:1px dashed var(--card-b);color:var(--muted);font-size:.85rem;margin-top:.8rem}
+.week{display:grid;grid-template-columns:repeat(7,minmax(78px,1fr));gap:.45rem;overflow-x:auto;padding-bottom:.3rem;scrollbar-width:thin}
+.wcell{display:flex;flex-direction:column;gap:.15rem;text-align:left;padding:.7rem;border-radius:14px;border:2px solid var(--card-b);background:var(--card);min-height:84px;transition:.2s}
+.wcell b{font-size:.8rem;font-weight:800}
+.wcell em{font-style:normal;font-size:.68rem;font-weight:800;color:var(--acc-ink);text-transform:uppercase;letter-spacing:.05em}
+.wcell span{font-size:.72rem;color:var(--muted);line-height:1.25}
+.wcell.rest{opacity:.5;border-style:dashed}
+button.wcell:hover{transform:translateY(-3px);border-color:var(--acc)}
+.wcell.sel{background:var(--acc);border-color:var(--acc);color:var(--on-acc)}
+.wcell.sel em,.wcell.sel span{color:var(--on-acc)}
+.tabs{display:flex;gap:.5rem;overflow-x:auto;padding:.2rem 0 .6rem;scrollbar-width:none;position:sticky;top:60px;z-index:20;background:linear-gradient(var(--bg) 70%,transparent)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;padding:.65rem 1.05rem;border-radius:13px;border:2px solid var(--card-b);background:var(--card);font-weight:800;font-size:.85rem;transition:.2s}
+.tab:hover{border-color:var(--acc)}
+.tab.sel{background:var(--acc);color:var(--on-acc);border-color:var(--acc)}
+.day-panel{display:none}
+.day-panel.active{display:block;animation:enter .4s cubic-bezier(.2,.8,.2,1)}
+.day-head{padding:1.2rem;margin-bottom:1rem}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
+.mtag{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:800;padding:.22rem .6rem;border-radius:99px;background:color-mix(in srgb,var(--c) 22%,transparent);border:1px solid var(--c)}
+.mtag.sec{background:transparent;border-style:dashed;font-weight:600;opacity:.85}
+.mtag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--c)}
+.bar{height:9px;border-radius:9px;background:var(--body);overflow:hidden;margin-top:.9rem}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .4s}
+.small-muted{color:var(--muted);font-size:.82rem}
+.cards{display:grid;gap:1rem;grid-template-columns:1fr}
+@media(min-width:900px){.cards{grid-template-columns:1fr 1fr}}
+.ex-card{padding:1.1rem;display:flex;flex-direction:column;gap:.9rem;transition:transform .2s,border-color .2s}
+.ex-card:hover{border-color:color-mix(in srgb,var(--acc) 55%,var(--card-b))}
+.ex-top{display:flex;gap:.8rem;align-items:flex-start}
+.ex-num{width:38px;height:38px;border-radius:12px;background:var(--acc);color:var(--on-acc);display:grid;place-items:center;font-family:'Unbounded',sans-serif;font-weight:800;flex:none}
+.ex-top h3{margin:0;font-size:1.08rem;font-weight:800;line-height:1.25}
+.ex-top .en{margin:.1rem 0 0;color:var(--muted);font-size:.8rem;font-weight:600}
+.ex-media{display:grid;grid-template-columns:1.55fr 1fr;gap:.6rem}
+.anim,.mmap{border-radius:14px;background:var(--body);padding:.4rem;position:relative;overflow:hidden}
+.anim{background:linear-gradient(160deg,var(--body),transparent)}
+.anim svg,.mmap svg{width:100%;height:100%;display:block}
+.anim small{position:absolute;left:8px;bottom:5px;font-size:.62rem;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.params{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.pbox{border-radius:13px;border:1px solid var(--card-b);padding:.55rem .4rem;text-align:center;background:var(--body)}
+.pbox small{display:block;font-size:.62rem;color:var(--muted);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.pbox b{font-family:'Unbounded',sans-serif;font-size:1.12rem;color:var(--acc-ink)}
+.setrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.setrow>small{color:var(--muted);font-weight:700;font-size:.75rem}
+.setpill{width:40px;height:40px;border-radius:50%;border:2px solid var(--card-b);background:transparent;font-weight:800;transition:.2s}
+.setpill:hover{border-color:var(--acc)}
+.setpill.done{background:var(--acc);border-color:var(--acc);color:var(--on-acc);transform:scale(1.05)}
+.actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.actions .btn{flex:1;min-width:120px}
+.det{border-top:1px dashed var(--card-b);padding-top:.7rem}
+.det summary{cursor:pointer;font-weight:800;font-size:.85rem;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.det summary::-webkit-details-marker{display:none}
+.det summary::after{content:'▾';transition:.2s;color:var(--muted)}
+.det[open] summary::after{transform:rotate(180deg)}
+.det ol{margin:.6rem 0 0;padding-left:1.2rem;font-size:.9rem}
+.det li{margin-bottom:.3rem}
+.det li::marker{color:var(--acc-ink);font-weight:800}
+.safety{margin-top:.6rem;padding:.7rem .85rem;border-radius:12px;background:color-mix(in srgb,#ff8a00 14%,transparent);border:1px solid color-mix(in srgb,#ff8a00 55%,transparent);font-size:.84rem;display:flex;gap:.55rem}
+.safety i,.safety svg{color:#ff9d2e;margin-top:.15rem}
+.tip{padding:1.1rem 1.2rem;margin-top:1.5rem}
+.tip ul{margin:.5rem 0 0;padding-left:1.2rem;font-size:.88rem;color:var(--muted)}
+.tip li{margin-bottom:.25rem}
+.print-only{display:none}
+
+/* timer */
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:60;min-width:58px;height:58px;padding:0 1rem;border-radius:20px;border:2px solid #000;background:var(--acc);color:var(--on-acc);display:flex;align-items:center;justify-content:center;gap:.5rem;font-weight:800;box-shadow:4px 4px 0 rgba(0,0,0,.55);transition:.15s}
+.fab:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(0,0,0,.55)}
+.fab svg,.fab i{width:1.5rem;height:1.5rem}
+.fab.done,.tpanel.done{animation:flash .5s ease-in-out 6}
+@keyframes flash{50%{box-shadow:0 0 0 12px color-mix(in srgb,var(--acc) 45%,transparent)}}
+.tpanel{position:fixed;left:50%;bottom:0;z-index:70;width:min(430px,100%);transform:translate(-50%,110%);transition:transform .35s cubic-bezier(.2,.8,.2,1);padding:1.1rem 1.2rem calc(1.2rem + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;background:var(--panel);border-color:var(--acc)}
+.tpanel.open{transform:translate(-50%,0)}
+.t-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.t-kick{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--acc-ink)}
+.t-label{font-weight:800;font-size:.95rem}
+.ring{position:relative;width:176px;height:176px;margin:.6rem auto}
+.ring svg{width:100%;height:100%}
+.ring-bg{fill:none;stroke:var(--body);stroke-width:10}
+.ring-fg{fill:none;stroke:var(--acc);stroke-width:10;stroke-linecap:round;stroke-dasharray:439.82;stroke-dashoffset:0;transition:stroke-dashoffset .25s linear}
+.t-time{position:absolute;inset:0;display:grid;place-items:center;font-family:'Unbounded',sans-serif;font-weight:800;font-size:2.1rem}
+.presets{display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap}
+.presets button{padding:.4rem .7rem;border-radius:10px;border:1px solid var(--card-b);background:var(--card);font-weight:800;font-size:.8rem}
+.presets button:hover{border-color:var(--acc)}
+.t-ctrl{display:flex;justify-content:center;gap:.6rem;margin:.9rem 0 .5rem}
+.t-ctrl .btn{padding:.75rem 1rem}
+.t-opts{display:flex;justify-content:center;gap:1.2rem;font-size:.8rem;color:var(--muted);font-weight:600}
+.t-opts input{accent-color:var(--acc);margin-right:.3rem}
+.toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,30px);opacity:0;z-index:90;background:var(--acc);color:var(--on-acc);font-weight:800;padding:.7rem 1.1rem;border-radius:14px;box-shadow:4px 4px 0 rgba(0,0,0,.5);transition:.3s;pointer-events:none;max-width:90vw;text-align:center;font-size:.9rem}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:480px){.ex-media{grid-template-columns:1.35fr 1fr}.opt.big{min-height:150px}}
+
+/* print */
+@media print{
+  html,html[data-theme],html[data-accent]{--bg:#fff;--text:#000;--muted:#444;--card:#fff;--card-b:#bbb;--acc:#222;--acc-ink:#000;--on-acc:#fff;--body:#e6e6e6;--muscle-off:#eee;--panel:#fff}
+  .app::before{display:none}
+  .no-print,.fab,.tpanel,.topbar,.stepper,.tabs,.toast,.actions,.setrow,.week,.sec-week{display:none!important}
+  .print-only{display:block!important;margin-bottom:1rem}
+  .container{padding:0}
+  .glass{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+  .day-panel{display:block!important;page-break-after:always;animation:none}
+  .ex-card{break-inside:avoid}
+  .cards{grid-template-columns:1fr 1fr}
+  .det{display:block}
+}
+</style>
+</head>
+<body class="app">
+
+<header class="topbar no-print">
+  <div class="topbar-in">
+    <div class="logo"><div class="logo-mark"><i data-lucide="dumbbell"></i></div><b>Fitness Generator</b></div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Тема оформлення">
+        <button type="button" class="seg-b" data-act="theme-set" data-v="dark" id="thDark" aria-label="Темна тема"><i data-lucide="moon"></i><span>Темна</span></button>
+        <button type="button" class="seg-b" data-act="theme-set" data-v="light" id="thLight" aria-label="Світла тема"><i data-lucide="sun"></i><span>Світла</span></button>
+      </div>
+      <div class="seg" role="group" aria-label="Акцентний колір">
+        <button type="button" class="seg-b dot" data-act="accent-set" data-v="lime" id="acLime" aria-label="Салатовий акцент" title="Салатовий"><i class="sw" style="background:#CCFF00"></i></button>
+        <button type="button" class="seg-b dot" data-act="accent-set" data-v="orange" id="acOrange" aria-label="Помаранчевий акцент" title="Помаранчевий"><i class="sw" style="background:#FF5500"></i></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <nav class="stepper no-print" id="stepper" aria-label="Кроки"></nav>
+  <section id="view"></section>
+</main>
+
+<button id="timerFab" class="fab no-print" data-act="timer-toggle" aria-label="Таймер відпочинку"><i data-lucide="timer"></i><span class="fab-txt"><b>Таймер</b><em id="fabTime">відпочинок</em></span></button>
+
+<div id="timerPanel" class="tpanel glass no-print" aria-hidden="true">
+  <div class="t-head">
+    <div><div class="t-kick">Таймер відпочинку</div><div id="tLabel" class="t-label">Обери час і натисни старт</div></div>
+    <button class="icon-btn" data-act="timer-close" aria-label="Закрити"><i data-lucide="x"></i></button>
+  </div>
+  <div class="ring">
+    <svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" class="ring-bg"/><circle id="ringFg" cx="80" cy="80" r="70" class="ring-fg" transform="rotate(-90 80 80)"/></svg>
+    <div id="tTime" class="t-time">01:00</div>
+  </div>
+  <div class="presets">
+    <button data-act="tpreset" data-s="30">30с</button><button data-act="tpreset" data-s="45">45с</button>
+    <button data-act="tpreset" data-s="60">1:00</button><button data-act="tpreset" data-s="90">1:30</button>
+    <button data-act="tpreset" data-s="120">2:00</button><button data-act="tpreset" data-s="180">3:00</button>
+  </div>
+  <div class="t-ctrl">
+    <button class="btn btn-ghost" data-act="tadd" data-s="-15" aria-label="Мінус 15 секунд">−15</button>
+    <button class="btn btn-primary" id="tPlay" data-act="tplay" aria-label="Старт/пауза"><i data-lucide="play"></i></button>
+    <button class="btn btn-ghost" data-act="tadd" data-s="15" aria-label="Плюс 15 секунд">+15</button>
+    <button class="btn btn-ghost" data-act="treset" aria-label="Скинути"><i data-lucide="rotate-ccw"></i></button>
+  </div>
+  <div class="t-opts">
+    <label><input type="checkbox" id="optSound" checked>Звук</label>
+    <label><input type="checkbox" id="optAuto" checked>Авто-старт після підходу</label>
+  </div>
+</div>
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+/* ============================================================
+   ДОПОМІЖНІ
+============================================================ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const ic=(n,c='')=>`<i data-lucide="${n}" class="${c}"></i>`;
+const refreshIcons=()=>{ if(window.lucide) try{lucide.createIcons();}catch(e){} };
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let toastT; function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400);}
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+
+/* ============================================================
+   М’ЯЗОВІ ГРУПИ
+============================================================ */
+const MUSCLES={
+  chest:{uk:'Груди',color:'#ff5a5f'}, back:{uk:'Спина',color:'#4dabf7'}, shoulders:{uk:'Плечі',color:'#ffa94d'},
+  biceps:{uk:'Біцепс',color:'#da77f2'}, triceps:{uk:'Трицепс',color:'#9775fa'}, core:{uk:'Прес / Кор',color:'#ffd43b'},
+  quads:{uk:'Квадріцепс',color:'#38d9a9'}, hamstrings:{uk:'Задня поверхня стегна',color:'#69db7c'},
+  glutes:{uk:'Сідниці',color:'#ff8787'}, calves:{uk:'Литки',color:'#74c0fc'}, cardio:{uk:'Кардіо / все тіло',color:'#ff922b'}
+};
+
+/* ============================================================
+   БАЗА ВПРАВ
+   X(id, укр, англ, поза-анімація, обладнання, основні м’язи, допоміжні, рівень 1-3, тип c/i, ризики, кроки через |, безпека)
+   обладнання: gym (тільки зал) | bw (власна вага) | db | band | bar | kb
+============================================================ */
+const DB=[];
+const X=(id,uk,en,move,eq,prim,sec,lvl,type,risks,steps,safety)=>DB.push({id,uk,en,move,eq,prim:prim.split(','),sec:sec?sec.split(','):[],lvl,type,risks:risks?risks.split(','):[],steps:steps.split('|'),safety});
+
+/* --- ГРУДИ --- */
+X('bench','Жим штанги лежачи','Barbell Bench Press','bench','gym','chest','triceps,shoulders',2,'c','shoulder','Лопатки зведені, стопи міцно на підлозі|Опускай штангу контрольовано до середини грудей|Видихаючи, жми вгору до повного випрямлення рук','Працюй зі страхувальником або в рамі з упорами; не відбивай штангу від грудей');
+X('inc-db','Жим гантелей на похилій лаві','Incline Dumbbell Press','bench','gym','chest','shoulders,triceps',2,'c','shoulder','Лава під кутом 30–45°, гантелі на рівні грудей|Жми вгору, злегка зводячи гантелі|Повільно опускай до розтягнення грудних м’язів','Не розводь лікті ширше 75° від тулуба — бережи плечі');
+X('floor-press','Жим гантелей лежачи на підлозі','Dumbbell Floor Press','bench','db','chest','triceps,shoulders',1,'c','','Ляж на підлогу, коліна зігнуті, гантелі над грудьми|Опускай лікті до легкого дотику підлоги|Видихаючи, жми гантелі вгору','Не ляскай ліктями об підлогу — торкайся плавно');
+X('mach-chest','Жим у тренажері для грудей','Machine Chest Press','bench','gym','chest','triceps,shoulders',1,'c','','Налаштуй сидіння: рукояті на рівні середини грудей|Жми вперед, не відриваючи спину від спинки|Повертай рукояті повільно, без ударів ваги','Не розгинай лікті «в замок» у кінці руху');
+X('cable-fly','Зведення рук у кросовері','Cable Crossover','bench','gym','chest','shoulders',2,'i','shoulder','Стань між блоками, лікті злегка зігнуті|Зводь руки дугою перед грудьми|Повільно розводь назад до розтягнення грудних','Не заводь руки далеко за лінію спини');
+X('db-fly','Розведення гантелей лежачи','Dumbbell Fly','bench','db','chest','shoulders',2,'i','shoulder','Гантелі над грудьми, лікті трохи зігнуті|Розводь руки в сторони дугою до рівня грудей|Зводь гантелі назад, стискаючи груди','Обирай помірну вагу; не опускай лікті нижче рівня тулуба');
+X('pec-deck','Зведення рук у тренажері «метелик»','Pec Deck Fly','bench','gym','chest','shoulders',1,'i','','Налаштуй сидіння: рукояті на рівні грудей|Зводь руки перед собою, стискаючи груди|Повільно повертайся у початкове положення','Не підтягуй плечі до вух і не відривай спину від спинки');
+X('pushup','Віджимання від підлоги','Push-Up','pushup','bw','chest','triceps,shoulders,core',1,'c','wrist','Упор лежачи: тіло — пряма лінія від голови до п’ят|Опускайся, лікті під кутом ~45° до тулуба|Відштовхнись вгору, не прогинаючи поперек','Напружуй прес і сідниці; при болі в зап’ястях роби на кулаках чи упорах');
+X('inc-pushup','Віджимання з упором на опору','Incline Push-Up','pushup','bw','chest','triceps,shoulders',1,'c','wrist','Руки на стійку лаву чи стіл, тіло рівне|Опускай груди до краю опори|Видихаючи, віджимайся вгору','Опора має бути стійкою; чим нижче опора — тим важче');
+X('dec-pushup','Віджимання з піднятими ногами','Decline Push-Up','pushup','bw','chest','shoulders,triceps',2,'c','wrist,shoulder','Стопи на лаві, руки трохи ширше плечей|Опускай груди до підлоги під контролем|Жми вгору, утримуючи корпус прямим','Не прогинайся в попереку; при болі в плечах повернись до звичайних віджимань');
+X('band-chest','Жим резинки від грудей','Band Chest Press','facepull','band','chest','triceps,shoulders',1,'c','','Закріпи резинку за спиною (стійка або двері)|Витягуй руки вперед на рівні грудей|Повільно повертай, не даючи резинці «шмагнути»','Перевір резинку на тріщини; закріплюй надійно');
+X('chest-dip','Віджимання на брусах (груди)','Chest Dips','dip','bar','chest','triceps,shoulders',3,'c','shoulder,elbow','Нахили корпус уперед, ноги злегка зігни|Опускайся до кута ~90° у ліктях|Видихаючи, віджимайся вгору','Не опускайся глибше за комфортний кут у плечах');
+
+/* --- СПИНА --- */
+X('pullup','Підтягування широким хватом','Wide-Grip Pull-Up','pullup','bar','back','biceps,shoulders',3,'c','shoulder,elbow','Хват ширше плечей, повний вис, лопатки опущені|Тягни лікті до ребер, підборіддя над перекладиною|Повільно опускайся до повного розгинання рук','Не розгойдуйся; у нижній точці не «провисай» на суглобах');
+X('chinup','Підтягування зворотним хватом','Chin-Up','pullup','bar','back,biceps','shoulders',2,'c','elbow','Хват на ширині плечей, долоні до себе|Підтягнись так, щоб підборіддя було над перекладиною|Опускайся 2–3 секунди під контролем','Починай рух зі зведення лопаток; уникай ривків');
+X('pulldown','Тяга верхнього блока до грудей','Lat Pulldown','pulldown','gym','back','biceps',1,'c','','Сядь, зафіксуй стегна під валиками|Тягни рукоять до верху грудей, зводячи лопатки|Повільно повертай, відчуваючи розтягнення спини','Не відхиляйся сильно назад і не тягни рукоять за голову');
+X('bb-row','Тяга штанги в нахилі','Barbell Bent-Over Row','row','gym','back','biceps,hamstrings',2,'c','back','Корпус майже паралельно підлозі, спина пряма|Тягни штангу до низу живота|Опускай повільно, не округлюючи спину','Тримай нейтральну спину; зменш вагу, якщо корпус «підстрибує»');
+X('db-row','Тяга гантелі однією рукою','One-Arm Dumbbell Row','row','db','back','biceps',1,'c','','Упрись вільною рукою в лаву чи стілець, спина пряма|Тягни гантель до пояса, ведучи лікоть назад|Повільно опускай до повного розтягнення','Не розвертай корпус; шию тримай у лінії зі спиною');
+X('cable-row','Тяга нижнього блока до пояса','Seated Cable Row','row','gym','back','biceps',1,'c','','Сядь, спина пряма, коліна злегка зігнуті|Тягни рукоять до живота, зводячи лопатки|Повертай руки вперед, не округлюючи спину','Не розхитуй корпус вперед-назад для «імпульсу»');
+X('band-row','Тяга резинки до пояса','Band Row','row','band','back','biceps',1,'c','','Сядь із прямими ногами, резинка навколо стоп|Тягни кінці до пояса, зводячи лопатки|Повільно повертайся у початкове положення','Спину тримай рівною; не піднімай плечі до вух');
+X('table-row','Тяга лежачи під столом','Table Inverted Row','row','bw','back','biceps,shoulders',2,'c','shoulder','Ляж під міцним столом, візьмись за край|Підтягни груди до столу, тіло — пряма лінія|Опускайся повільно, повністю розгинаючи руки','Переконайся, що стіл стійкий і витримує твою вагу');
+X('band-pulldown','Тяга резинки зверху до грудей','Band Pulldown','pulldown','band','back','biceps',1,'c','','Закріпи резинку над головою, стань на коліна|Тягни кінці до грудей, зводячи лопатки|Повертай руки вгору повільно','Не відхиляй корпус; лікті тягни вниз і назад');
+X('rear-fly','Розведення гантелей у нахилі','Bent-Over Rear Delt Fly','row','db','shoulders','back',2,'i','back','Нахились із прямою спиною, гантелі під грудьми|Розводь руки в сторони, зводячи лопатки|Повільно опускай, без розгойдування','Бери легкі гантелі; спину не округлюй');
+X('deadlift','Станова тяга','Conventional Deadlift','hinge','gym','back,glutes','hamstrings,quads,core',3,'c','back','Штанга над серединою стопи, спина пряма, груди вперед|Відштовхнись ногами, тримаючи штангу близько до тіла|Випрямся, стискаючи сідниці; опускай штангу контрольовано','Ніколи не округлюй поперек; починай із легкої ваги й опануй техніку');
+X('rdl','Румунська тяга зі штангою','Romanian Deadlift','hinge','gym','hamstrings,glutes','back',2,'c','back','Штанга в опущених руках, коліна злегка зігнуті|Відводь таз назад, ковзаючи штангою вздовж ніг|Піднімись, стискаючи сідниці','Спина нейтральна; опускай штангу лише поки спина не округлюється');
+X('db-rdl','Румунська тяга з гантелями','Dumbbell Romanian Deadlift','hinge','db','hamstrings,glutes','back',1,'c','back','Гантелі перед стегнами, коліна злегка зігнуті|Відводь таз назад, спускаючи гантелі вздовж ніг|Піднімись, стискаючи сідниці','Не округлюй спину; гантелі ковзають близько до ніг');
+X('superman','Супермен','Superman','superman','bw','back','glutes',1,'i','back','Ляж на живіт, руки витягнуті вперед|Одночасно підніми руки, груди й ноги|Утримай 1–2 секунди й повільно опустись','Не закидай голову; піднімайся плавно без ривків');
+X('kb-row','Тяга гирі в нахилі','Kettlebell Row','row','kb','back','biceps',1,'c','','Нахились із прямою спиною, гиря в руці|Тягни гирю до пояса, лікоть уздовж тулуба|Повільно опускай до повного розгинання','Тримай спину рівною; без ривків');
+X('shrug','Шраги з гантелями','Dumbbell Shrug','shrug','db','back','shoulders',1,'i','','Гантелі в опущених руках, спина пряма|Підніми плечі вгору до вух|Утримай секунду й повільно опусти','Не крути плечима по колу — лише вгору-вниз');
+X('back-ext','Гіперекстензія','Back Extension','superman','gym','back,glutes','hamstrings',1,'i','back','Зафіксуй стегна на подушці, тіло рівне|Опускай корпус до комфортного нахилу|Піднімись до прямої лінії тіла','Не перерозгинайся в попереку нагорі');
+
+/* --- ПЛЕЧІ --- */
+X('ohp','Жим штанги стоячи','Overhead Press','press','gym','shoulders','triceps,core',2,'c','shoulder,back','Штанга на рівні ключиць, прес напружений|Жми вгору, трохи відводячи голову назад|Зафіксуй над головою й повільно опусти','Не прогинайся в попереку; ребра «зібрані»');
+X('db-press','Жим гантелей над головою','Dumbbell Shoulder Press','press','db','shoulders','triceps',1,'c','shoulder','Гантелі на рівні плечей, прес напружений|Жми вгору до майже повного розгинання рук|Повільно опускай до рівня вух','Не розгойдуйся і не прогинай поперек');
+X('arnold','Жим Арнольда','Arnold Press','press','db','shoulders','triceps',2,'c','shoulder','Гантелі перед грудьми, долоні до себе|Жми вгору, розгортаючи долоні вперед|Повертайся назад із розворотом долонь','Контролюй обертання, не бери надмірну вагу');
+X('lat-raise','Махи гантелей у сторони','Lateral Raise','raise','db','shoulders','',1,'i','','Гантелі вздовж тулуба, лікті злегка зігнуті|Піднімай руки в сторони до рівня плечей|Повільно опускай за 2–3 секунди','Не піднімай гантелі вище плечей, без ривків');
+X('front-raise','Підйом гантелей перед собою','Front Raise','raise','db','shoulders','chest',1,'i','shoulder','Гантелі перед стегнами, спина пряма|Підніми руки до рівня плечей|Повільно опусти','Не розхитуй корпус; легка вага');
+X('band-lat','Махи резинкою в сторони','Band Lateral Raise','raise','band','shoulders','',1,'i','','Стань на резинку, кінці в руках|Підніми руки в сторони до рівня плечей|Повільно опусти','Плечі опущені, шия розслаблена');
+X('mach-press','Жим у тренажері на плечі','Machine Shoulder Press','press','gym','shoulders','triceps',1,'c','shoulder','Налаштуй сидіння: рукояті на рівні плечей|Жми вгору до майже випрямлених рук|Повільно повертай рукояті вниз','Спина притиснута до спинки; не блокуй лікті');
+X('pike','Віджимання «гірка»','Pike Push-Up','pushup','bw','shoulders','triceps,chest',2,'c','shoulder,wrist','Підніми таз вгору — тіло як перевернута літера V|Опускай голову до підлоги між руками|Відштовхнись вгору','Не вдаряйся головою об підлогу; рухайся контрольовано');
+X('kb-press','Жим гирі над головою','Kettlebell Press','press','kb','shoulders','triceps,core',2,'c','shoulder','Гиря біля плеча, зап’ясток прямий|Жми вгору, повністю випрямляючи руку|Опускай гирю вздовж тіла','Не прогинайся в попереку; зап’ясток нейтральний');
+X('band-press','Жим резинки над головою','Band Overhead Press','press','band','shoulders','triceps',1,'c','shoulder','Стань на резинку, кінці біля плечей|Жми вгору до повного розгинання рук|Опускай плавно','Тримай корпус рівно, не прогинай поперек');
+X('face-pull','Тяга до обличчя','Face Pull','facepull','gym','shoulders','back',1,'i','','Блок на рівні обличчя, хват канатом|Тягни канат до обличчя, розводячи лікті|Повільно повертай руки вперед','Лікті на рівні плечей; вага помірна');
+X('band-face','Тяга резинки до обличчя','Band Face Pull','facepull','band','shoulders','back',1,'i','','Закріпи резинку на рівні обличчя|Тягни кінці до обличчя, розводячи лікті|Повільно повертай руки','Не відхиляйся назад; лікті високо');
+
+/* --- БІЦЕПС --- */
+X('bb-curl','Підйом штанги на біцепс','Barbell Curl','curl','gym','biceps','',1,'i','elbow','Хват штанги на ширині плечей, лікті біля тулуба|Підніми штангу до рівня грудей|Повільно опусти','Не розгойдуйся корпусом; лікті нерухомі');
+X('db-curl','Підйом гантелей на біцепс','Dumbbell Curl','curl','db','biceps','',1,'i','','Гантелі в опущених руках, долоні вперед|Підніми гантелі, не відриваючи лікті від тулуба|Повільно опусти','Не гойдай корпус; повний контроль на опусканні');
+X('hammer','Молоткові згинання','Hammer Curl','curl','db','biceps','',1,'i','','Гантелі нейтральним хватом (долоні всередину)|Піднімай гантелі до плечей|Повільно опускай','Лікті біля тулуба, без ривків');
+X('band-curl','Згинання рук із резинкою','Band Curl','curl','band','biceps','',1,'i','','Стань на резинку, кінці в руках|Піднімай кінці до плечей|Повільно опускай, не даючи резинці смикнути','Тримай лікті нерухомими');
+X('cable-curl','Згинання рук на блоці','Cable Curl','curl','gym','biceps','',1,'i','','Стань до нижнього блока, лікті біля боків|Зігни руки, піднімаючи рукоять до плечей|Повільно розігни руки','Корпус нерухомий');
+X('conc-curl','Концентроване згинання','Concentration Curl','curl','db','biceps','',1,'i','','Сядь, лікоть упирається у внутрішню частину стегна|Підніми гантель до плеча|Повільно опусти','Без розгойдування, повна амплітуда');
+X('towel-curl','Біцепс з рушником (ізометрія)','Towel Curl','curl','bw','biceps','',1,'i','','Стань однією ногою на рушник, кінці тримай у руках|Тягни рушник вгору, чинячи опір ногою|Повільно опускай, не розслабляючи м’яз','Збільшуй зусилля поступово; без ривків');
+
+/* --- ТРИЦЕПС --- */
+X('pushdown','Розгинання рук на блоці','Triceps Pushdown','pushdown','gym','triceps','',1,'i','elbow','Лікті притиснуті до боків, хват рукояті зверху|Розігни руки вниз до повного випрямлення|Повільно повертайся до кута 90°','Лікті нерухомі; не нависай над блоком');
+X('skull','Французький жим лежачи','Skull Crusher','bench','gym','triceps','chest',2,'i','elbow','Лежачи, штанга над грудьми, руки прямі|Згинай лікті, опускаючи штангу до лоба|Розігни руки, не розводячи лікті','Лікті дивляться вгору; помірна вага, краще зі страхуванням');
+X('oh-ext','Розгинання гантелі з-за голови','Overhead Triceps Extension','triext','db','triceps','',1,'i','elbow,shoulder','Тримай гантель обома руками над головою|Опусти її за голову, згинаючи лікті|Розігни руки вгору','Лікті близько до голови; пряма спина');
+X('bench-dip','Зворотні віджимання від стільця','Bench Dip','dip','bw','triceps','chest,shoulders',1,'i','shoulder,wrist','Руки на край стійкого стільця, ноги вперед|Зігни лікті до ~90°, спина близько до опори|Розігни руки','Не опускайся надто глибоко — бережи плечі');
+X('band-pushdown','Розгинання рук із резинкою','Band Triceps Pushdown','pushdown','band','triceps','',1,'i','','Закріпи резинку вгорі, лікті біля тулуба|Розігни руки вниз|Повільно повертай','Лікті нерухомі');
+X('close-pushup','Віджимання вузьким хватом','Close-Grip Push-Up','pushup','bw','triceps','chest,shoulders',2,'c','wrist,elbow','Руки на ширині плечей чи вужче|Опускайся, тримаючи лікті біля тулуба|Віджимайся вгору','Не розводь лікті; тіло рівне');
+X('dips','Віджимання на брусах (трицепс)','Parallel Bar Dips','dip','bar','triceps','chest,shoulders',2,'c','shoulder,elbow','Корпус вертикально, лікті назад|Опускайся до ~90° у ліктях|Віджимайся вгору','Не опускайся надто низько; без розгойдування');
+X('kickback','Віддача гантелі в нахилі','Triceps Kickback','row','db','triceps','',1,'i','','Нахились, лікоть притиснутий до тулуба|Розігни руку назад до повного випрямлення|Повільно поверни','Лікоть нерухомий; легка вага');
+
+/* --- НОГИ --- */
+X('squat','Присідання зі штангою','Barbell Back Squat','squat','gym','quads','glutes,hamstrings,core',2,'c','knee,back','Штанга на трапеціях, стопи на ширині плечей|Сідай, відводячи таз назад, коліна по лінії стоп|Піднімись, відштовхуючись п’ятами','Використовуй раму з упорами; спина нейтральна; коліна не заходять всередину');
+X('goblet','Кубкове присідання з гантеллю','Goblet Squat','squat','db','quads','glutes,core',1,'c','knee','Тримай гантель біля грудей|Сідай глибоко, спина пряма|Піднімись, відштовхуючись п’ятами','Коліна рухаються по лінії стоп; п’яти на підлозі');
+X('bw-squat','Присідання з власною вагою','Bodyweight Squat','squat','bw','quads','glutes,core',1,'c','knee','Стопи на ширині плечей, руки перед собою|Сідай, відводячи таз назад|Підніміться, штовхаючись п’ятами','Не округлюй спину; коліна не заходять всередину');
+X('leg-press','Жим ногами','Leg Press','legext','gym','quads','glutes,hamstrings',1,'c','knee','Спина притиснута, стопи на платформі на ширині плечей|Опускай платформу до кута ~90°|Жми вгору, не блокуючи коліна','Не відривай таз від сидіння; не «замикай» коліна');
+X('leg-ext','Розгинання ніг у тренажері','Leg Extension','legext','gym','quads','',1,'i','knee','Налаштуй валик на гомілках, спина притиснута|Розігни ноги до повного випрямлення|Повільно опусти','Не використовуй інерцію; помірна вага');
+X('lunge','Випади назад','Reverse Lunge','lunge','bw','quads,glutes','hamstrings',1,'c','knee','Стань прямо, зроби крок назад|Опускайся, поки обидва коліна зігнуті ~90°|Відштовхнись передньою ногою','Переднє коліно не виходить далеко за носок; корпус рівний');
+X('db-lunge','Випади з гантелями','Dumbbell Lunge','lunge','db','quads,glutes','hamstrings',2,'c','knee','Гантелі в опущених руках|Зроби випад, опускаючи заднє коліно до підлоги|Піднімись, відштовхнувшись передньою ногою','Стеж за балансом; тримай корпус прямо');
+X('bulgarian','Болгарські спліт-присідання','Bulgarian Split Squat','lunge','bw','quads,glutes','hamstrings',2,'c','knee','Задня нога на лаві чи стільці|Опускайся вертикально вниз|Піднімись, штовхаючись передньою ногою','Опора стійка; передня стопа достатньо далеко від опори');
+X('step-up','Підйоми на сходинку','Step-Up','lunge','bw','quads,glutes','hamstrings',1,'c','knee','Стань перед стійкою сходинкою|Підніміться, штовхаючись усією стопою|Повільно спустись назад','Не відштовхуйся задньою ногою; сходинка стійка');
+X('wall-sit','Присідання біля стіни (статика)','Wall Sit','squat','bw','quads','glutes',1,'i','knee','Притисни спину до стіни, стегна паралельно підлозі|Утримуй позицію, коліна над щиколотками|Повільно ковзни вгору','Не клади руки на коліна; дихай рівно');
+X('jump-squat','Стрибкові присідання','Jump Squat','squat','bw','quads,cardio','glutes',2,'c','knee,impact','Присядь у напівприсід, руки перед собою|Різко стрибни вгору|М’яко приземлись у присід','Приземляйся на м’які коліна; уникай при болях у колінах');
+X('band-squat','Присідання з резинкою','Banded Squat','squat','band','quads','glutes',1,'c','knee','Стань на резинку, кінці біля плечей|Присідай, відводячи таз назад|Піднімись, штовхаючись п’ятами','Коліна по лінії стоп');
+X('kb-squat','Присідання з гирею','Kettlebell Goblet Squat','squat','kb','quads','glutes,core',1,'c','knee','Тримай гирю біля грудей|Присядь глибоко, лікті між колін|Піднімись, штовхаючись п’ятами','Спина пряма; п’яти на підлозі');
+X('sumo','Сумо-присідання з гантеллю','Sumo Squat','squat','db','glutes,quads','hamstrings',1,'c','knee','Широка постановка ніг, носки назовні|Гантель між ніг, присядь, коліна за напрямком носків|Підніміся, стискаючи сідниці','Коліна по лінії носків');
+
+/* --- СІДНИЦІ / ЗАДНЯ ПОВЕРХНЯ --- */
+X('hip-thrust','Ягодичний міст зі штангою','Barbell Hip Thrust','bridge','gym','glutes','hamstrings',2,'c','','Лопатки на лаві, штанга на стегнах|Підніми таз до прямої лінії плечі–коліна|Утримай і повільно опусти','Підборіддя до грудей; не перерозгинай поперек');
+X('glute-bridge','Ягодичний міст','Glute Bridge','bridge','bw','glutes,hamstrings','core',1,'c','','Лежачи, коліна зігнуті, стопи біля таза|Підніми таз, стискаючи сідниці|Опускайся повільно','Не прогинайся в попереку');
+X('sl-bridge','Ягодичний міст на одній нозі','Single-Leg Glute Bridge','bridge','bw','glutes,hamstrings','core',2,'c','','Одна нога зігнута, інша піднята|Піднімай таз, тримаючи його рівно|Повільно опускай','Таз не повертається вбік');
+X('band-bridge','Ягодичний міст із резинкою','Banded Glute Bridge','bridge','band','glutes','hamstrings',1,'c','','Резинка над колінами, стопи на ширині таза|Піднімай таз, не даючи колінам заходити всередину|Повільно опусти','Коліна дивляться назовні');
+X('db-bridge','Ягодичний міст з гантеллю','Dumbbell Glute Bridge','bridge','db','glutes,hamstrings','',1,'c','','Гантель на стегнах, лежачи|Підніми таз, стискаючи сідниці|Повільно опусти','Тримай гантель надійно; поперек нейтральний');
+X('leg-curl','Згинання ніг у тренажері','Leg Curl','legcurl','gym','hamstrings','calves',1,'i','','Налаштуй валик над п’ятами|Зігни ноги до максимального скорочення|Повільно випрями','Таз притиснутий; без ривків');
+X('slider-curl','Згинання ніг із ковзанням','Slider Hamstring Curl','bridge','bw','hamstrings','glutes',2,'i','','Лежачи на спині, п’ятки на рушнику на гладкій підлозі|Підніми таз і розсувай п’ятки вперед|Підтягни п’ятки назад до сідниць','Тримай таз піднятим; рухайся повільно');
+X('kb-swing','Махи гирею','Kettlebell Swing','swing','kb','glutes,cardio','hamstrings,back,core',2,'c','back','Гиря перед тобою, хват обома руками|Відведи таз назад, потім різко розігни стегна й виштовхни гирю вперед|Дозволь гирі повернутись, знову відводячи таз назад','Рух іде від стегон, а не від рук; спина нейтральна');
+X('sl-rdl','Румунська тяга на одній нозі','Single-Leg RDL','hinge','bw','hamstrings,glutes','core',2,'c','back','Стань на одну ногу, коліно трохи зігнуте|Нахиляй корпус уперед, відводячи вільну ногу назад|Повернись, стискаючи сідниці','Тримай таз рівно; можна триматись за опору');
+X('donkey','Віслючі удари','Donkey Kick','kickback','bw','glutes','hamstrings',1,'i','wrist,knee','Стань на чотири опори, спина рівна|Підніми зігнуту ногу п’яткою до стелі|Повільно опусти','Не прогинай поперек; рух із сідниць');
+X('band-kick','Відведення ноги з резинкою','Banded Kickback','kickback','band','glutes','hamstrings',1,'i','wrist,knee','На чотирьох опорах, резинка на стопі|Розігни ногу назад, стискаючи сідниці|Повільно поверни','Корпус нерухомий');
+
+/* --- ЛИТКИ --- */
+X('calf','Підйом на носки стоячи','Standing Calf Raise','calf','bw','calves','',1,'i','','Стань на край сходинки чи на підлогу|Підніміться на носки якомога вище|Повільно опустись','Контролюй рух; за потреби тримайся за опору');
+X('db-calf','Підйом на носки з гантелями','Dumbbell Calf Raise','calf','db','calves','',1,'i','','Гантелі в руках, стань на край сходинки|Піднімись на носки|Повільно опустись до розтягнення','Повільний темп, без підстрибувань');
+X('seat-calf','Підйом на носки сидячи (тренажер)','Seated Calf Raise','calf','gym','calves','',1,'i','','Валики на колінах, носки на платформі|Піднімай п’ятки вгору|Повільно опускай нижче рівня платформи','Рухайся без ривків');
+
+/* --- ПРЕС / КОР --- */
+X('plank','Планка','Plank','plank','bw','core','shoulders',1,'i','wrist','Лікті під плечима, тіло — пряма лінія|Напружуй прес і сідниці|Утримуй позицію, не затримуючи дихання','Не провисай і не піднімай таз надто високо');
+X('side-plank','Бокова планка','Side Plank','plank','bw','core','shoulders',1,'i','shoulder','Лікоть під плечем, ноги разом|Підніми таз, тіло — пряма лінія|Утримай і повтори з іншого боку','Таз не опускається; дихай рівно');
+X('crunch','Скручування','Crunch','crunch','bw','core','',1,'i','','Лежачи, коліна зігнуті, руки біля скронь|Підніми лопатки від підлоги, скручуючи прес|Повільно опустись','Не тягни шию руками; рух від преса');
+X('bicycle','Велосипед','Bicycle Crunch','crunch','bw','core','',1,'i','','Лежачи, руки біля голови, ноги підняті|Тягни лікоть до протилежного коліна|Чергуй боки повільно','Не смикай шию; поперек притиснутий');
+X('leg-raise','Підйом ніг лежачи','Lying Leg Raise','legraise','bw','core','',2,'i','back','Лежачи, поперек притиснутий до підлоги|Підніми прямі ноги до вертикалі|Повільно опусти, не торкаючись підлоги','Якщо поперек відривається — зігни коліна');
+X('hang-raise','Підйом ніг у висі','Hanging Leg Raise','hangraise','bar','core','',3,'i','shoulder','Повний вис на перекладині|Підніми ноги до рівня таза чи вище|Повільно опусти без розгойдування','Контролюй рух; не розгойдуйся');
+X('climber','Альпініст','Mountain Climber','climber','bw','core,cardio','shoulders,quads',1,'c','wrist','Упор лежачи, прес напружений|Швидко підтягуй коліна до грудей по черзі|Тримай таз на рівні плечей','Не піднімай таз; темп добирай за технікою');
+X('russian','Російські скручування','Russian Twist','crunch','bw','core','',2,'i','back','Сядь, відкинь корпус назад, стопи над підлогою|Повертай корпус вліво й вправо|Контролюй кожен поворот','Спина пряма; зменш амплітуду при болю в попереку');
+X('dead-bug','Мертвий жук','Dead Bug','crunch','bw','core','',1,'i','','Лежачи, руки й ноги зігнуті вгору|Опускай протилежні руку й ногу до підлоги|Повертайся й чергуй боки','Поперек притиснутий до підлоги');
+X('cable-crunch','Скручування на блоці','Cable Crunch','crunch','gym','core','',2,'i','','Стань на коліна біля верхнього блока, канат біля голови|Скрутись, тягнучи лікті до колін|Повільно розпрямись','Рух від преса, не від стегон');
+X('pallof','Жим Паллофа з резинкою','Pallof Press','facepull','band','core','shoulders',2,'i','','Стань боком до якоря резинки|Витягни руки вперед, не даючи корпусу повертатись|Поверни руки до грудей','Корпус нерухомий; дихай рівно');
+X('bird-dog','Птах-собака','Bird Dog','plank','bw','core,back','glutes',1,'i','wrist','На чотирьох опорах, спина рівна|Витягни протилежні руку й ногу|Поверни й чергуй боки','Корпус не хитається; таз рівно');
+X('hollow','«Човник» (hollow hold)','Hollow Hold','crunch','bw','core','',2,'i','back','Лежачи, підніми лопатки й прямі ноги|Притисни поперек до підлоги|Утримуй позицію','Якщо поперек відривається — зігни ноги');
+
+/* --- КАРДІО --- */
+X('burpee','Берпі','Burpee','pushup','bw','cardio','chest,quads,core',2,'c','wrist,knee,impact','Із присіду стань в упор лежачи|Віджмись, поверни стопи й вистрибни вгору|Повтори в ритмічному темпі','Роби повільніше, якщо техніка порушується');
+
+/* ===== РОЗШИРЕНА БАЗА: ГРУДИ / СПИНА / ПЛЕЧІ ===== */
+X('smith-bench','Жим лежачи у тренажері Сміта','Smith Machine Bench Press','bench','gym','chest','triceps,shoulders',1,'c','shoulder','Встанови лаву під штангою, лопатки зведені|Зніми штангу з фіксаторів і опусти до грудей|Жми вгору, у кінці поверни штангу на фіксатори','Виставляй упори й фіксатори; не відбивай штангу від грудей');
+X('dec-bench','Жим штанги на лаві з негативним нахилом','Decline Bench Press','bench','gym','chest','triceps',2,'c','shoulder','Зафіксуй ноги під валиками, лопатки зведені|Опускай штангу до нижньої частини грудей|Видихаючи, жми вгору','Працюй зі страхувальником; не відбивай штангу від грудей');
+X('hammer-chest','Жим у важільному тренажері (plate-loaded)','Plate-Loaded Chest Press','seatpress','gym','chest','triceps,shoulders',1,'c','','Налаштуй сидіння: рукояті на рівні грудей|Жми вперед до майже повного розгинання рук|Повільно повертай, відчуваючи розтяг у грудях','Спина щільно притиснута до спинки; не «замикай» лікті');
+X('cable-press','Жим у кросовері стоячи','Standing Cable Chest Press','cpress','gym','chest','triceps,shoulders',1,'c','shoulder','Стань боком до блоків, руки з рукоятями біля грудей|Жми руки вперед до повного випрямлення|Повільно повертай, не даючи вазі «смикнути»','Тримай корпус стійко; крок уперед для балансу');
+X('cable-low-fly','Зведення рук у кросовері знизу вгору','Low-to-High Cable Fly','cfly','gym','chest','shoulders',2,'i','shoulder','Блоки внизу, лікті злегка зігнуті|Зводь руки дугою вгору до рівня обличчя|Повільно опускай, розтягуючи груди','Не піднімай плечі до вух; помірна вага');
+X('db-pullover','Пуловер із гантеллю','Dumbbell Pullover','pullover','gym','chest,back','triceps',2,'i','shoulder','Ляж упоперек лави, гантель над грудьми|Опускай гантель за голову дугою з прямими руками|Поверни гантель над груди','Не прогинай поперек; вага помірна');
+X('diamond','Віджимання «алмаз»','Diamond Push-Up','pushup','bw','triceps','chest,shoulders',2,'c','wrist,elbow','Руки разом під грудьми, пальці утворюють «ромб»|Опускайся, тримаючи лікті біля тулуба|Віджимайся вгору, не прогинаючи поперек','Якщо болять зап’ястя або лікті — повернись до звичайних віджимань');
+X('inchworm','Хід «гусениця»','Inchworm','pushup','bw','cardio','core,shoulders,hamstrings',1,'c','wrist','Стань прямо, нахились і поклади долоні на підлогу|Крокуй руками вперед до упору лежачи|Підтягни ноги до рук і випрямся','Тримай прес напруженим; не округлюй поперек');
+X('floor-pullover','Пуловер із гантеллю на підлозі','Floor Dumbbell Pullover','pullover','db','chest,back','triceps',1,'i','shoulder','Ляж на підлогу, гантель над грудьми двома руками|Опускай гантель за голову дугою з прямими руками|Поверни гантель над груди','Не прогинай поперек; вага помірна');
+X('tbar','Тяга Т-грифа','T-Bar Row','row','gym','back','biceps,hamstrings',2,'c','back','Стань над грифом, спина пряма, коліна зігнуті|Тягни рукоять до нижньої частини грудей|Повільно опускай, не округлюючи спину','Не розгойдуй корпус; спина нейтральна');
+X('mach-row','Тяга у тренажері з упором у груди','Chest-Supported Machine Row','seatrow','gym','back','biceps,shoulders',1,'c','','Притисни груди до подушки, візьмись за рукояті|Тягни лікті назад, зводячи лопатки|Повільно повертайся, розтягуючи спину','Не відривай груди від подушки; плечі опущені');
+X('assist-pull','Підтягування у гравітроні','Assisted Pull-Up Machine','pulldown','gym','back','biceps',1,'c','','Стань колінами на платформу, візьмись за ручки|Підтягнись, зводячи лопатки|Повільно опустись без «провалу»','Не розгойдуйся; починай рух зі спини');
+X('straight-arm','Пуловер на верхньому блоці стоячи','Straight-Arm Pulldown','strarm','gym','back','core',2,'i','shoulder','Стань перед верхнім блоком, руки майже прямі|Опускай рукоять дугою до стегон|Повільно повертай догори до розтягнення','Лікті майже прямі й нерухомі; корпус стабільний');
+X('onearm-cable','Тяга блока однією рукою','One-Arm Cable Row','seatrow','gym','back','biceps',1,'c','','Сядь, спина пряма, одна рука на рукояті|Тягни рукоять до пояса, зводячи лопатку|Повільно повертай, без обертання корпусу','Не розвертай корпус; не піднімай плече');
+X('incline-row','Тяга гантелей лежачи на похилій лаві','Chest-Supported Dumbbell Row','row','gym','back','biceps,shoulders',1,'c','','Ляж грудьми на лаву з нахилом 30–45°|Тягни гантелі до боків, зводячи лопатки|Повільно опускай до повного розгинання рук','Груди не відриваються від лави; без ривків');
+X('rack-pull','Тяга з упорів (rack pull)','Rack Pull','hinge','gym','back','glutes,hamstrings',3,'c','back','Штанга на упорах на рівні колін|Випрямся, відводячи плечі назад|Повільно опусти штангу на упори','Спина нейтральна; без ривків і надмірної ваги');
+X('trap-dl','Тяга з трап-грифом','Trap Bar Deadlift','hinge','gym','quads,glutes','back,hamstrings',2,'c','back','Стань усередині грифа, груди вперед|Відштовхнись ногами, випрямляючи корпус|Опусти гриф контрольовано','Стеж за нейтральною спиною; не смикай гриф');
+X('sumo-dl','Станова тяга сумо','Sumo Deadlift','hinge','gym','glutes,quads','back,hamstrings',3,'c','back,knee','Широка постановка ніг, носки назовні|Спина пряма, штанга біля гомілок|Випрямся, штовхаючи підлогу й стискаючи сідниці','Коліна по лінії носків; починай з легкої ваги');
+X('good-morning','Нахили зі штангою «Доброго ранку»','Good Morning','hinge','gym','hamstrings,back','glutes',3,'c','back','Штанга на трапеціях, коліна злегка зігнуті|Відводь таз назад, нахиляючи корпус до паралелі|Піднімись, стискаючи сідниці','Спина лише нейтральна; використовуй легку вагу');
+X('pullthrough','Протяжка каната між ніг на блоці','Cable Pull-Through','hinge','gym','glutes,hamstrings','back',1,'c','','Стань спиною до нижнього блока, канат між ніг|Відведи таз назад, спина пряма|Випрямся, стискаючи сідниці','Рух із стегон, а не з попереку');
+X('db-dl','Станова тяга з гантелями','Dumbbell Deadlift','hinge','db','back,glutes','hamstrings,quads',1,'c','back','Гантелі поруч зі стопами, спина пряма|Випрямся, відштовхуючись ногами|Повільно опусти гантелі вздовж ніг','Спина нейтральна; не округлюй поперек');
+X('kb-dl','Станова тяга з гирею','Kettlebell Deadlift','hinge','kb','glutes,hamstrings','back',1,'c','back','Гиря між стопами, спина пряма|Випрямся, штовхаючи підлогу|Повільно опусти гирю на підлогу','Гирю тримай близько до тіла; без округлення спини');
+X('band-rdl','Румунська тяга з резинкою','Band Romanian Deadlift','hinge','band','hamstrings,glutes','back',1,'c','back','Стань на резинку, кінці в руках|Відводь таз назад, спина пряма|Випрямся, стискаючи сідниці','Спина рівна; резинка натягнута плавно');
+X('neutral-pull','Підтягування нейтральним хватом','Neutral-Grip Pull-Up','pullup','bar','back,biceps','shoulders',2,'c','elbow','Хват долонями одна до одної, повний вис|Підтягнись, тягнучи лікті до ребер|Повільно опустись до повного розгинання','Без розгойдування; лопатки опущені');
+X('hang-knee','Підйом колін у висі','Hanging Knee Raise','hangraise','bar','core','back',1,'i','shoulder','Повний вис на перекладині|Підтягни коліна до грудей, скручуючи таз|Повільно опусти без розгойдування','Контролюй рух; не розгойдуйся');
+X('band-pullapart','Розведення резинки перед собою','Band Pull-Apart','facepull','band','back,shoulders','',1,'i','','Тримай резинку перед собою на рівні грудей|Розводь руки в сторони, зводячи лопатки|Повільно повертайся','Не піднімай плечі; рух із лопаток');
+X('smith-press','Жим у тренажері Сміта стоячи','Smith Machine Shoulder Press','press','gym','shoulders','triceps',2,'c','shoulder','Штанга на рівні ключиць, прес напружений|Жми вгору до повного випрямлення рук|Повільно опусти, поверни на фіксатори','Не прогинайся в попереку; користуйся фіксаторами');
+X('cable-lat','Махи в сторони на нижньому блоці','Cable Lateral Raise','raise','gym','shoulders','',1,'i','','Стань боком до блока, рукоять у далекій руці|Піднімай руку в сторону до рівня плеча|Повільно опускай','Не піднімай вище плеча; без ривків');
+X('rear-mach','Розведення в тренажері на задню дельту','Reverse Pec Deck','seatfly','gym','shoulders','back',1,'i','','Сядь грудьми до подушки, візьмись за рукояті|Розводь руки назад, зводячи лопатки|Повільно повертай вперед','Плечі опущені; не тягни шию');
+X('upright','Тяга штанги до підборіддя','Upright Row','upright','gym','shoulders','back',2,'c','shoulder','Штанга у опущених руках, хват на ширині плечей|Тягни лікті вгору до рівня грудей|Повільно опусти','Не піднімай лікті вище плечей; при болі в плечах пропусти');
+X('landmine','Жим у ландмайні стоячи','Landmine Press','press','gym','shoulders','chest,triceps',2,'c','shoulder','Кінець грифа біля плеча, стань рівно|Жми гриф вперед і вгору по дузі|Повільно повертай до плеча','Корпус стабільний; не прогинай поперек');
+X('kb-halo','«Гало» з гирею','Kettlebell Halo','raise','kb','shoulders','core,back',1,'i','shoulder','Тримай гирю біля грудей догори дном|Обводь гирю навколо голови по колу|Змінюй напрям кожен підхід','Тримай корпус рівно; плавний рух');
+
+/* ===== РУКИ ===== */
+X('preacher','Згинання на лаві Скотта','Preacher Curl','preachercurl','gym','biceps','',1,'i','elbow','Сядь, плечі на подушці, руки на лаві|Зігни руки, піднімаючи гриф до плечей|Повільно опусти, не розгинаючи лікті до кінця','Не відривай плечі від подушки; без ривків');
+X('zottman','Згинання Зоттмана','Zottman Curl','curl','db','biceps','',2,'i','elbow','Піднімай гантелі звичайним хватом|Нагорі розверни долоні вниз|Повільно опускай зворотним хватом','Легка вага; плавний розворот');
+X('cable-rope-curl','Молоткове згинання з канатом на блоці','Cable Rope Hammer Curl','curl','gym','biceps','',1,'i','','Нижній блок, канат нейтральним хватом|Зігни руки до плечей, лікті біля тулуба|Повільно випрями','Лікті нерухомі; корпус рівний');
+X('rev-curl','Зворотні згинання рук із гантелями','Reverse Curl','curl','db','biceps','',1,'i','elbow,wrist','Гантелі долонями вниз|Піднімай до рівня плечей|Повільно опускай','Зап’ястя прямі; легка вага');
+X('cable-oh','Розгинання рук з-за голови на блоці','Cable Overhead Triceps Extension','triext','gym','triceps','',1,'i','elbow,shoulder','Стань спиною до блока, канат за головою|Розігни руки вперед і вгору|Повільно повертай за голову','Лікті близько до голови; корпус рівний');
+X('dip-mach','Віджимання в тренажері на трицепс','Seated Dip Machine','seatpress','gym','triceps','chest,shoulders',1,'c','shoulder','Сядь, спина притиснута, рукояті біля боків|Жми рукояті вниз до розгинання рук|Повільно повертай угору','Не піднімай плечі; лікті біля тулуба');
+X('cg-bench','Жим штанги вузьким хватом','Close-Grip Bench Press','bench','gym','triceps','chest,shoulders',2,'c','elbow,wrist','Хват трохи вужчий за плечі, лопатки зведені|Опускай штангу до нижньої частини грудей, лікті біля тулуба|Жми вгору','Не звужуй хват надмірно; працюй зі страхувальником');
+/* ===== НОГИ ===== */
+X('smith-squat','Присідання в тренажері Сміта','Smith Machine Squat','squat','gym','quads','glutes',1,'c','knee','Стопи трохи попереду штанги|Сідай до паралелі стегон із підлогою|Піднімись, відштовхуючись п’ятами','Користуйся фіксаторами; коліна по лінії стоп');
+X('hack','Гакк-присідання','Hack Squat','hack','gym','quads','glutes',2,'c','knee','Притисни спину й плечі до подушок|Опускайся контрольовано до кута ~90°|Жми платформу п’ятами вгору','Не відривай поперек від спинки; не блокуй коліна');
+X('front-squat','Фронтальні присідання зі штангою','Barbell Front Squat','squat','gym','quads','core,glutes',3,'c','knee,wrist','Штанга на передніх дельтах, лікті високо|Сідай, тримаючи корпус вертикально|Піднімись, штовхаючись п’ятами','Використовуй раму з упорами; не опускай лікті');
+X('walk-lunge','Випади в ходьбі з гантелями','Walking Lunge','lunge','db','quads,glutes','hamstrings',2,'c','knee','Гантелі в опущених руках|Крокуй уперед у випад до кута ~90°|Переходь у наступний випад іншою ногою','Корпус вертикально; передня стопа повністю на підлозі');
+X('side-lunge','Бокові випади','Side Lunge','lunge','bw','glutes,quads','hamstrings',1,'c','knee','Широкий крок убік, носки вперед|Сідай на опорну ногу, інша пряма|Відштовхнись і повернись у стійку','Коліно за напрямком носка; п’ята не відривається');
+X('pistol','Присідання «пістолет»','Pistol Squat','pistol','bw','quads,glutes','core',3,'c','knee','Стань на одну ногу, інша витягнута вперед|Повільно сідай на опорній нозі|Піднімись, штовхаючись п’ятою','Тримайся за опору при потребі; контролюй коліно');
+X('db-thruster','Трастер із гантелями','Dumbbell Thruster','squat','db','quads,shoulders','glutes,triceps',2,'c','knee,shoulder','Гантелі на плечах, присядь|Піднімись і виштовхни гантелі над голову|Опусти гантелі на плечі й повтори','Єдиний плавний рух; не прогинай поперек');
+X('hip-abd','Розведення ніг у тренажері','Hip Abduction Machine','abduct','gym','glutes','',1,'i','','Сядь, спина притиснута, подушки на зовнішній стороні колін|Розводь ноги в сторони|Повільно зведи ноги назад','Не гойдайся; повільне повернення');
+X('seated-curl','Згинання ніг сидячи в тренажері','Seated Leg Curl','seatedcurl','gym','hamstrings','calves',1,'i','','Сядь, валик над п’ятами, стегна зафіксовані|Зігни ноги під сидіння|Повільно випрями','Не відриви стегна від сидіння; без ривків');
+X('glute-mach','Відведення ноги назад на блоці','Cable Glute Kickback','cablekick','gym','glutes','hamstrings',1,'i','','Ремінець на щиколотці, тримайся за стійку|Відводь ногу назад, стискаючи сідницю|Повільно повертай','Корпус нерухомий; не прогинай поперек');
+X('smith-calf','Підйом на носки в тренажері Сміта','Smith Calf Raise','calf','gym','calves','',1,'i','','Штанга на трапеціях, носки на підвищенні|Піднімись на носки максимально|Повільно опустись до розтягнення','Стопи прямо; повільний темп');
+X('calf-stand','Підйом на носки у тренажері стоячи','Standing Calf Machine','calf','gym','calves','',1,'i','','Подушки на плечах, носки на платформі|Піднімись на носки|Повільно опустись нижче рівня платформи','Коліна злегка зігнуті; без підскоків');
+X('db-split','Спліт-присідання з гантелями','Dumbbell Split Squat','lunge','db','quads,glutes','hamstrings',1,'c','knee','Одна нога попереду, інша позаду, гантелі в руках|Опускайся вертикально вниз|Підніміться, штовхаючись передньою ногою','Корпус вертикально; крок достатньо довгий');
+X('box-jump','Стрибки на тумбу','Box Jump','jump','gym','quads,cardio','glutes,calves',2,'c','knee,impact','Стань перед стійкою тумбою|Присядь і стрибни обома ногами на тумбу|Спустись кроком і повтори','М’яке приземлення; тумба стійка');
+/* ===== ПРЕС / КОР ===== */
+X('ab-mach','Скручування в тренажері для преса','Ab Crunch Machine','abmach','gym','core','',1,'i','','Налаштуй вагу, сядь, притисни рукояті до грудей|Скрутись уперед, зближаючи груди й таз|Повільно повертайся','Рух від преса, не від рук');
+X('woodchop','Дрова на блоці','Cable Woodchop','chop','gym','core','shoulders',2,'i','back','Верхній блок, стань боком|По діагоналі тягни рукоять вниз через тіло|Повільно повертай догори','Обертай корпус, а не лише руки; спина нейтральна');
+X('ab-wheel','Ролик для преса','Ab Wheel Rollout','rollout','gym','core','shoulders,back',3,'i','back,shoulder','Стань на коліна, ролик під плечима|Викочуй ролик уперед, тримаючи прес напруженим|Поверни ролик назад','Не прогинай поперек; обирай меншу амплітуду');
+X('situp','Підйом корпусу на лаві','Bench Sit-Up','situp','gym','core','',1,'i','back','Ляж на лаву, ноги зафіксовані|Підніми корпус до положення сидячи|Повільно опустись','Не смикай шию руками; контрольований рух');
+X('rev-crunch','Зворотні скручування','Reverse Crunch','legraise','bw','core','',1,'i','','Лежачи, ноги зігнуті над підлогою|Підніми таз, тягнучи коліна до грудей|Повільно опустись','Без розгойдування; рух від преса');
+X('flutter','Ножиці лежачи','Flutter Kicks','legraise','bw','core','quads',1,'i','back','Лежачи, ноги прямі в повітрі|Поперемінно піднімай і опускай ноги|Тримай поперек притиснутим','Якщо поперек відривається — зігни коліна');
+X('band-chop','Дрова з резинкою','Band Woodchop','chop','band','core','shoulders',1,'i','','Закріпи резинку вгорі, стань боком|Тягни резинку по діагоналі вниз|Повільно повертай','Корпус стабільний, обертання від кору');
+X('db-chop','Дрова з гантеллю','Dumbbell Woodchop','chop','db','core','shoulders',1,'i','back','Гантель високо над одним плечем|По діагоналі опусти її до протилежного коліна|Підніми назад по тій самій дузі','Присідай легко; спина нейтральна');
+X('farmer','Прогулянка фермера','Farmer’s Walk','walk','db','core,back','shoulders,glutes',1,'c','','Візьми важкі гантелі, випрямся|Крокуй короткими кроками 20–30 метрів|Тримай корпус рівно, плечі опущені','Не нахиляйся вбік; міцний хват');
+/* ===== КАРДІО-ТРЕНАЖЕРИ (ЗАЛ) ===== */
+X('treadmill','Біг на біговій доріжці','Treadmill Run','run','gym','cardio','quads,calves',1,'c','knee,impact','Почни з ходьби 2 хв, плавно збільшуй швидкість|Біжи рівно, стопи під корпусом|У кінці знизь темп і пройдись 2 хв','Не тримайся за поручні; закріпи ключ безпеки');
+X('treadmill-walk','Ходьба на біговій доріжці під нахил','Incline Treadmill Walk','run','gym','cardio','glutes,calves',1,'c','','Нахил 6–12%, швидкість 5–6 км/год|Йди, не спираючись на поручні|Тримай корпус прямо, дихай рівно','Підбирай нахил без болю в попереку');
+X('treadmill-hiit','Інтервальний біг на доріжці (HIIT)','Treadmill Intervals','run','gym','cardio','quads,calves',2,'c','knee,impact','30 с швидкого бігу, 60 с ходьби|Повтори 6–10 циклів|Завершуй повільною ходьбою','Лише після розминки; не рівняйся на швидкість');
+X('bike','Велотренажер','Stationary Bike','cycle','gym','cardio','quads,glutes',1,'c','','Налаштуй сидіння: нога майже випрямляється внизу|Крути педалі рівномірно, 70–90 об/хв|Збільшуй опір поступово','Спина рівна; не закидай плечі');
+X('airbike','Аеробайк (Air Bike)','Air Bike','cycle','gym','cardio','quads,shoulders',2,'c','','Працюй одночасно руками й ногами|Інтервали: 20 с швидко, 40 с повільно|Після серії дай пульсу відновитись','Рух плавний; не виходь на максимум без розминки');
+X('ellip','Еліптичний тренажер','Elliptical Trainer','ellip','gym','cardio','quads,glutes',1,'c','','Стань на педалі, візьмись за рукояті|Рухай ногами й руками в єдиному ритмі|Не нахиляйся вперед','Мінімальне навантаження на суглоби; тримай рівну спину');
+X('rower','Гребний тренажер','Rowing Machine','rowm','gym','cardio,back','quads,biceps',2,'c','back','Спочатку відштовхнись ногами|Потім відхили корпус і потягни рукоять до ребер|Поверни: руки, корпус, потім коліна','Спину тримай прямою; не починай рух руками');
+X('stairmill','Степпер (сходи)','Stair Climber','stairc','gym','cardio','glutes,quads',2,'c','knee','Стань рівно, торкайся поручнів лише для балансу|Рівномірно «йди» по сходинках|Тримай корпус прямо','Не спирайся на поручні всією вагою');
+X('skierg','Лижний тренажер (Ski Erg)','Ski Erg','chop','gym','cardio','back,core,shoulders',2,'c','back','Руки високо перед собою, ручки в руках|Тягни рукояті вниз із присідом|Поверни в старт плавно','Корпус працює як єдиний ланцюг; не округлюй спину');
+/* ===== КАРДІО ВДОМА ===== */
+X('jj','Стрибки «зірка»','Jumping Jacks','jump','bw','cardio','quads,calves',1,'c','knee,impact','Стань прямо, руки вздовж тулуба|Стрибком розведи ноги й підніми руки вгору|Поверни в стійку тим же стрибком','М’яке приземлення на носки');
+X('high-knees','Біг із високим підніманням колін','High Knees','run','bw','cardio','core,quads',1,'c','knee,impact','Біжи на місці, піднімаючи коліна до пояса|Працюй руками в ритмі кроків|Тримай корпус рівно','М’яке приземлення; при болі в колінах знизь амплітуду');
+X('jump-rope','Скакалка','Jump Rope','jump','bw','cardio','calves',1,'c','knee,impact','Тримай скакалку в руках біля стегон|Стрибай на носках, обертаючи зап’ястями|Тримай темп 100–120 стрибків/хв','Невисокі стрибки; м’яке приземлення');
+X('shadow','Бокс із тінню','Shadow Boxing','punch','bw','cardio','shoulders,core',1,'c','','Стійка боксера, кулаки біля підборіддя|Чергуй прямі удари руками|Додай рух ногами й ухили','Не розгинай лікті до хрускоту; тримай захист');
+X('skater','Стрибки ковзаняра','Skater Jumps','jump','bw','cardio','glutes,quads',2,'c','knee,impact','Стрибни убік на одну ногу, інша позаду|Одразу стрибни в протилежний бік|Тримай корпус нахиленим уперед','Контролюй коліно при приземленні');
+X('tuck','Стрибки з підтягуванням колін','Tuck Jumps','jump','bw','cardio','quads',3,'c','knee,impact','Присядь і стрибни вгору|У повітрі підтягни коліна до грудей|М’яко приземлись на зігнуті ноги','Лише при хорошому стані колін; м’яке приземлення');
+
+const DB_BY_ID=Object.fromEntries(DB.map(e=>[e.id,e]));
+const HOLD=['plank','side-plank','wall-sit','hollow'];
+
+/* ============================================================
+   ПОЗИ ДЛЯ SVG-АНІМАЦІЇ (вид збоку, viewBox 200×140)
+============================================================ */
+const S=(h,n,p,e,w,k,f,k2,f2)=>({h,n,p,e,w,k,f,k2:k2||k,f2:f2||f});
+const H=[100,26],N=[100,38],P=[100,76],K=[101,106],F=[100,134];
+const POSES={
+  squat:{a:S(H,N,P,[112,54],[124,50],[102,106],F),b:S([120,54],[114,66],[84,96],[132,76],[146,70],[118,106],[102,134])},
+  hinge:{a:S(H,N,P,[102,60],[104,82],K,F),b:S([148,62],[138,66],[94,78],[140,86],[140,108],[100,108],F)},
+  pushup:{a:S([168,72],[154,78],[86,106],[154,106],[154,132],[54,119],[22,132]),b:S([168,110],[154,116],[86,124],[138,124],[154,132],[54,128],[22,132])},
+  row:{a:S([148,62],[138,66],[94,78],[140,88],[140,110],[100,108],F),b:S([148,62],[138,66],[94,78],[118,80],[132,86],[100,108],F)},
+  press:{a:S(H,N,P,[110,56],[106,38],K,F),b:S(H,N,P,[108,18],[104,2],K,F)},
+  curl:{a:S(H,N,P,[102,60],[104,82],K,F),b:S(H,N,P,[104,60],[118,44],K,F)},
+  bench:{pr:'bench',a:S([36,96],[52,98],[110,98],[54,74],[54,52],[140,96],[146,134]),b:S([36,96],[52,98],[110,98],[68,96],[52,84],[140,96],[146,134])},
+  lunge:{a:S(H,N,P,[102,58],[104,80],K,F,K,F),b:S([106,48],[106,60],[104,98],[108,80],[110,100],[130,100],[128,134],[84,120],[66,134])},
+  plank:{a:S([166,96],[152,100],[82,114],[152,132],[170,132],[52,124],[22,132]),b:S([166,92],[152,96],[82,108],[152,132],[170,132],[52,121],[22,132])},
+  climber:{a:S([168,72],[154,78],[86,106],[154,106],[154,132],[54,119],[22,132],[112,112],[124,130]),b:S([168,72],[154,78],[86,106],[154,106],[154,132],[54,119],[22,132],[54,119],[22,132])},
+  crunch:{a:S([36,124],[52,126],[108,128],[46,112],[38,116],[136,106],[148,134]),b:S([54,92],[62,104],[108,128],[60,92],[52,96],[136,106],[148,134])},
+  pullup:{pr:'bar',a:S([100,40],[100,52],[100,92],[101,32],[102,12],[103,112],[100,130]),b:S([98,10],[100,24],[100,64],[114,36],[102,12],[102,84],[100,102])},
+  hangraise:{pr:'bar',a:S([100,40],[100,52],[100,92],[101,32],[102,12],[100,112],[100,132]),b:S([100,40],[100,52],[100,92],[101,32],[102,12],[122,96],[148,92])},
+  dip:{pr:'dip',a:S([100,34],[100,46],[100,88],[100,62],[100,74],[106,108],[98,126]),b:S([104,56],[102,68],[100,108],[114,78],[100,74],[106,124],[96,134])},
+  raise:{a:S(H,N,P,[102,60],[104,82],K,F),b:S(H,N,P,[122,40],[144,40],K,F)},
+  triext:{a:S([100,34],[100,46],[100,84],[106,24],[94,38],[101,112],[100,134]),b:S([100,34],[100,46],[100,84],[106,24],[106,4],[101,112],[100,134])},
+  legext:{pr:'seat',a:S([70,44],[74,56],[78,98],[90,78],[98,96],[116,100],[118,128]),b:S([70,44],[74,56],[78,98],[90,78],[98,96],[116,100],[146,100])},
+  legcurl:{a:S(H,N,P,[112,56],[126,64],K,F,K,F),b:S(H,N,P,[112,56],[126,64],K,F,[102,108],[74,98])},
+  calf:{a:S(H,N,P,[102,60],[104,82],K,F),b:S([100,18],[100,30],[100,68],[102,52],[104,74],[101,99],[104,134])},
+  bridge:{a:S([34,124],[50,126],[104,128],[60,128],[92,130],[134,106],[146,134]),b:S([36,120],[52,118],[102,98],[62,124],[94,128],[136,98],[146,134])},
+  shrug:{a:S([100,28],[100,40],[100,78],[102,62],[103,84],K,F),b:S([100,20],[100,32],[100,78],[102,56],[103,78],K,F)},
+  swing:{a:S([146,64],[136,68],[92,80],[128,86],[112,100],[100,108],F),b:S(H,N,P,[118,40],[140,40],K,F)},
+  facepull:{a:S(H,N,P,[122,40],[144,40],K,F),b:S(H,N,P,[96,40],[114,30],K,F)},
+  pulldown:{pr:'seat',a:S([84,40],[86,52],[84,98],[92,24],[100,4],[116,98],[118,130]),b:S([84,40],[86,52],[84,98],[78,68],[100,56],[116,98],[118,130])},
+  superman:{a:S([160,126],[146,128],[94,128],[166,128],[188,128],[60,128],[30,128]),b:S([160,112],[146,118],[94,124],[168,110],[188,100],[60,118],[30,108])},
+  legraise:{a:S([30,126],[46,128],[100,128],[56,130],[80,130],[130,128],[160,128]),b:S([30,126],[46,128],[100,128],[56,130],[80,130],[100,98],[100,68])},
+  kickback:{a:S([162,88],[148,94],[92,94],[150,114],[150,132],[92,132],[70,134],[92,132],[70,134]),b:S([162,88],[148,94],[92,94],[150,114],[150,132],[92,132],[70,134],[70,106],[66,80])},
+  pushdown:{a:S(H,N,P,[106,62],[122,58],K,F),b:S(H,N,P,[106,62],[108,88],K,F)}
+};
+
+const VIS={};
+Object.assign(POSES,{
+  run:{pr:'treadmill',nw:1,a:S([104,24],[102,36],[98,74],[88,58],[80,70],[116,92],[110,114],[96,102],[88,127]),b:S([104,24],[102,36],[98,74],[114,56],[128,50],[84,98],[66,114],[114,94],[110,118])},
+  cycle:{pr:'bike',nw:1,a:S([104,38],[96,50],[76,76],[112,58],[132,58],[100,86],[104,110],[86,100],[84,126]),b:S([104,38],[96,50],[76,76],[112,58],[132,58],[86,100],[84,126],[100,86],[104,110])},
+  ellip:{pr:'ellip',nw:1,a:S(H,N,P,[116,58],[136,48],[110,102],[122,124],[92,104],[80,124]),b:S(H,N,P,[88,58],[78,70],[92,104],[80,124],[110,102],[122,124])},
+  rowm:{pr:'rower',a:S([130,70],[122,82],[110,112],[140,92],[152,102],[134,92],[140,118]),b:S([56,72],[62,84],[70,112],[80,94],[100,90],[104,112],[140,118])},
+  stairc:{pr:'stair',nw:1,a:S([104,34],[102,46],[98,84],[112,66],[124,64],[112,98],[98,110],[100,112],[96,132]),b:S([104,34],[102,46],[98,84],[112,66],[124,64],[100,112],[96,132],[112,98],[98,110])},
+  legpress:{pr:'legpress',wj:'f',a:S([44,62],[52,74],[70,102],[60,88],[76,86],[92,74],[118,96]),b:S([44,62],[52,74],[70,102],[60,88],[76,86],[98,81],[126,60])},
+  lyingcurl:{pr:'lcurl',wj:'f',a:S([26,114],[40,116],[92,116],[36,124],[24,128],[122,116],[150,116]),b:S([26,114],[40,116],[92,116],[36,124],[24,128],[122,116],[116,86])},
+  seatedcurl:{pr:'seat',wj:'f',a:S([78,50],[80,62],[84,98],[96,76],[98,88],[110,98],[138,104]),b:S([78,50],[80,62],[84,98],[96,76],[98,88],[110,98],[96,130])},
+  abmach:{pr:'seat',a:S([66,40],[70,52],[78,98],[88,64],[94,52],[104,98],[106,128]),b:S([86,64],[84,74],[84,98],[96,78],[104,70],[104,98],[106,128])},
+  seatfly:{pr:'seat',a:S([78,50],[80,62],[84,98],[76,76],[64,70],[110,98],[110,128]),b:S([78,50],[80,62],[84,98],[100,78],[122,70],[110,98],[110,128])},
+  seatpress:{pr:'seat',a:S([78,50],[80,62],[84,98],[94,76],[98,64],[110,98],[110,128]),b:S([78,50],[80,62],[84,98],[112,70],[136,62],[110,98],[110,128])},
+  seatohp:{pr:'seat',a:S([78,50],[80,62],[84,98],[92,66],[92,52],[110,98],[110,128]),b:S([78,50],[80,62],[84,98],[90,38],[88,12],[110,98],[110,128])},
+  seatrow:{pr:'seatrow',a:S([86,54],[84,66],[80,104],[108,80],[128,88],[104,96],[128,106]),b:S([86,54],[84,66],[80,104],[88,86],[104,86],[104,96],[128,106])},
+  hack:{pr:'hack',a:S([74,28],[78,40],[88,80],[90,58],[98,72],[104,108],[100,134]),b:S([80,56],[84,68],[94,108],[96,86],[106,98],[124,106],[104,134])},
+  abduct:{pr:'seat',nw:1,a:S([78,50],[80,62],[84,98],[96,76],[98,88],[110,98],[110,128],[110,98],[110,128]),b:S([78,50],[80,62],[84,98],[96,76],[98,88],[112,96],[122,124],[104,92],[138,108])},
+  cablekick:{wj:'f2',a:S([128,34],[120,44],[100,80],[136,62],[148,70],[100,110],[100,134],[104,108],[104,134]),b:S([128,34],[120,44],[100,80],[136,62],[148,70],[100,110],[100,134],[90,106],[66,98])},
+  jump:{nw:1,a:S(H,N,P,[102,60],[104,82],K,F,K,F),b:S([100,8],[100,20],[100,58],[114,34],[122,14],[108,84],[116,106],[92,84],[84,106])},
+  punch:{nw:1,a:S([100,26],[100,38],[100,76],[112,56],[118,44],[112,104],[124,134],[90,106],[78,134]),b:S([104,26],[104,38],[100,76],[122,48],[148,46],[112,104],[124,134],[90,106],[78,134])},
+  chop:{a:S(H,N,P,[116,40],[128,18],K,F),b:S([100,34],[100,46],[98,84],[100,66],[88,94],[106,108],[108,134],[92,108],[86,134])},
+  walk:{a:S(H,N,P,[102,60],[104,84],[110,104],[118,134],[92,106],[84,132]),b:S(H,N,P,[102,60],[104,84],[92,106],[84,132],[110,104],[118,134])},
+  pullover:{pr:'bench',a:S([36,96],[52,98],[110,98],[54,74],[54,50],[140,96],[146,134]),b:S([36,96],[52,98],[110,98],[34,88],[12,98],[140,96],[146,134])},
+  rollout:{a:S([100,58],[100,70],[100,104],[104,88],[108,106],[100,128],[70,128]),b:S([158,108],[144,110],[104,114],[150,122],[164,128],[100,128],[70,128])},
+  situp:{pr:'bench',a:S([36,96],[52,98],[104,98],[58,92],[42,88],[136,82],[148,122]),b:S([88,62],[84,76],[104,98],[100,78],[96,64],[136,82],[148,122])},
+  cfly:{a:S([102,26],[102,38],[100,76],[112,56],[134,70],K,F),b:S([102,26],[102,38],[100,76],[114,52],[134,34],K,F)},
+  cpress:{a:S([102,26],[102,38],[100,76],[108,62],[118,54],[112,104],[124,134],[90,106],[78,134]),b:S([102,26],[102,38],[100,76],[122,54],[144,50],[112,104],[124,134],[90,106],[78,134])},
+  strarm:{a:S([104,32],[102,44],[100,82],[124,40],[148,26],[104,108],[100,134]),b:S([108,32],[104,44],[100,82],[112,72],[116,98],[104,108],[100,134])},
+  upright:{a:S(H,N,P,[104,62],[104,84],K,F),b:S(H,N,P,[118,46],[106,38],K,F)},
+  preachercurl:{pr:'preacher',a:S([72,52],[74,64],[70,104],[98,86],[124,98],[98,100],[100,134]),b:S([72,52],[74,64],[70,104],[98,86],[112,60],[98,100],[100,134])},
+  pistol:{a:S(H,N,P,[112,54],[132,50],K,F,[108,100],[128,100]),b:S([116,60],[110,72],[84,100],[134,72],[150,70],[110,106],[96,134],[132,100],[160,100])}
+});
+
+/* ===== ВІЗУАЛІЗАЦІЯ ТРЕНАЖЕРІВ ===== */
+const fixEx=(id,o)=>{ if(DB_BY_ID[id]) Object.assign(DB_BY_ID[id],o); };
+const vis=(id,o)=>{ VIS[id]=o; };
+['treadmill','treadmill-walk','treadmill-hiit','bike','airbike','ellip','rower','stairmill','skierg'].forEach(id=>fixEx(id,{steady:true}));
+fixEx('cable-fly',{move:'cfly'}); fixEx('pec-deck',{move:'seatfly'}); fixEx('mach-chest',{move:'seatpress'}); fixEx('mach-press',{move:'seatohp'});
+fixEx('leg-press',{move:'legpress'}); fixEx('leg-curl',{move:'lyingcurl'}); fixEx('cable-row',{move:'seatrow'});
+fixEx('db-row',{move:'row'});
+vis('smith-bench',{pr:['bench','smith']}); vis('smith-squat',{pr:'smith'}); vis('smith-press',{pr:'smith'}); vis('smith-calf',{pr:'smith'});
+vis('squat',{pr:'rack'}); vis('front-squat',{pr:'rack'}); vis('ohp',{pr:'rack'}); vis('calf-stand',{pr:'rack'});
+vis('bench',{pr:['bench','rack']}); vis('cg-bench',{pr:['bench','rack']}); vis('dec-bench',{pr:['bench','rack']});
+vis('pulldown',{pr:'seat',anc:[110,6]}); vis('assist-pull',{pr:'seat',anc:[110,6]});
+vis('face-pull',{anc:[176,58]}); vis('pushdown',{anc:[176,12]}); vis('cable-curl',{anc:[176,124]}); vis('cable-rope-curl',{anc:[176,124]});
+vis('cable-fly',{anc:[176,12]}); vis('cable-low-fly',{anc:[176,124]}); vis('cable-press',{anc:[176,58]});
+vis('cable-row',{anc:[176,90]}); vis('onearm-cable',{anc:[176,90]}); vis('straight-arm',{anc:[176,12]});
+vis('cable-lat',{anc:[176,124]}); vis('cable-oh',{anc:[176,124]}); vis('pullthrough',{anc:[176,124]});
+vis('glute-mach',{anc:[176,124],aj:'f2'}); vis('woodchop',{anc:[176,12]}); vis('skierg',{anc:[176,12],pr:[],cap:'Ski Erg'});
+vis('high-knees',{pr:[]}); vis('treadmill-hiit',{cap:'Швидко / повільно'});
+vis('hip-thrust',{pr:'bench'});
+
+const MU='stroke="var(--muted)" stroke-linecap="round"';
+const ANIM=(attr,v)=>`<animate attributeName="${attr}" values="${v}" keyTimes="0;.5;1" calcMode="spline" keySplines=".45 0 .25 1;.45 0 .25 1" dur="2.6s" repeatCount="indefinite"/>`;
+const TRI=(x,y)=>`${x};${y};${x}`;
+function propsSVG(pr){
+  const c=MU, list=Array.isArray(pr)?pr:(pr?[pr]:[]), has=k=>list.includes(k);
+  let s=`<line x1="8" y1="137" x2="192" y2="137" ${c} stroke-width="2" stroke-dasharray="2 5"/>`;
+  if(has('bench')) s+=`<rect x="28" y="104" width="100" height="6" rx="2" fill="var(--muted)" opacity=".7"/><line x1="40" y1="110" x2="40" y2="137" ${c} stroke-width="3" opacity=".6"/><line x1="116" y1="110" x2="116" y2="137" ${c} stroke-width="3" opacity=".6"/>`;
+  if(has('bar')) s+=`<line x1="62" y1="12" x2="138" y2="12" ${c} stroke-width="4"/><line x1="62" y1="12" x2="62" y2="137" ${c} stroke-width="2" opacity=".5"/><line x1="138" y1="12" x2="138" y2="137" ${c} stroke-width="2" opacity=".5"/>`;
+  if(has('dip')) s+=`<line x1="86" y1="74" x2="120" y2="74" ${c} stroke-width="4"/><line x1="88" y1="74" x2="88" y2="137" ${c} stroke-width="3" opacity=".5"/>`;
+  if(has('seat')) s+=`<rect x="56" y="104" width="58" height="6" rx="2" fill="var(--muted)" opacity=".7"/><line x1="64" y1="104" x2="60" y2="48" ${c} stroke-width="6" opacity=".45"/><line x1="84" y1="110" x2="84" y2="137" ${c} stroke-width="3" opacity=".6"/>`;
+  if(has('treadmill')) s+=`<rect x="40" y="130" width="112" height="7" rx="3" fill="var(--muted)" opacity=".5"/><circle cx="44" cy="133" r="5" fill="var(--muted)" opacity=".7"/><circle cx="148" cy="133" r="5" fill="var(--muted)" opacity=".7"/><line x1="46" y1="129" x2="146" y2="129" ${c} stroke-width="2" stroke-dasharray="8 10"><animate attributeName="stroke-dashoffset" values="0;36" dur=".7s" repeatCount="indefinite"/></line><line x1="156" y1="133" x2="168" y2="52" ${c} stroke-width="4" opacity=".7"/><rect x="156" y="38" width="30" height="16" rx="3" fill="none" ${c} stroke-width="3"/><line x1="164" y1="86" x2="130" y2="86" ${c} stroke-width="3" opacity=".6"/>`;
+  if(has('bike')) s+=`<circle cx="124" cy="110" r="20" fill="none" ${c} stroke-width="3" opacity=".5"/><line x1="76" y1="82" x2="92" y2="120" ${c} stroke-width="4" opacity=".7"/><line x1="92" y1="120" x2="124" y2="110" ${c} stroke-width="4" opacity=".7"/><line x1="124" y1="110" x2="128" y2="60" ${c} stroke-width="4" opacity=".7"/><line x1="128" y1="60" x2="138" y2="56" ${c} stroke-width="5"/><rect x="62" y="76" width="22" height="6" rx="3" fill="var(--muted)" opacity=".8"/><circle cx="94" cy="118" r="4" fill="var(--muted)"/>`;
+  if(has('ellip')) s+=`<circle cx="62" cy="112" r="15" fill="none" ${c} stroke-width="3" opacity=".5"/><rect x="52" y="128" width="104" height="6" rx="3" fill="var(--muted)" opacity=".5"/><line x1="148" y1="128" x2="140" y2="46" ${c} stroke-width="4" opacity=".7"/><line x1="140" y1="46" x2="152" y2="40" ${c} stroke-width="5"/>`;
+  if(has('rower')) s+=`<line x1="30" y1="124" x2="150" y2="124" ${c} stroke-width="4" opacity=".6"/><line x1="150" y1="124" x2="168" y2="108" ${c} stroke-width="4" opacity=".6"/><circle cx="170" cy="106" r="16" fill="none" ${c} stroke-width="3" opacity=".5"/><line x1="144" y1="128" x2="140" y2="96" ${c} stroke-width="4"/><rect x="100" y="115" width="24" height="6" rx="3" fill="var(--muted)" opacity=".85">${ANIM('x','100;56;100')}</rect>`;
+  if(has('stair')) s+=`<line x1="150" y1="136" x2="150" y2="46" ${c} stroke-width="5" opacity=".7"/><line x1="150" y1="60" x2="122" y2="64" ${c} stroke-width="4"/><rect x="72" y="112" width="44" height="6" rx="2" fill="var(--muted)" opacity=".75">${ANIM('y','112;132;112')}</rect><rect x="72" y="132" width="44" height="6" rx="2" fill="var(--muted)" opacity=".75">${ANIM('y','132;112;132')}</rect>`;
+  if(has('smith')) s+=`<line x1="58" y1="6" x2="58" y2="137" ${c} stroke-width="3" opacity=".55"/><line x1="142" y1="6" x2="142" y2="137" ${c} stroke-width="3" opacity=".55"/><rect x="50" y="133" width="100" height="4" fill="var(--muted)" opacity=".5"/><rect x="52" y="6" width="96" height="3" fill="var(--muted)" opacity=".4"/>`;
+  if(has('rack')) s+=`<line x1="52" y1="10" x2="52" y2="137" ${c} stroke-width="5" opacity=".5"/><line x1="148" y1="10" x2="148" y2="137" ${c} stroke-width="5" opacity=".5"/><line x1="52" y1="10" x2="148" y2="10" ${c} stroke-width="3" opacity=".4"/>`;
+  if(has('legpress')) s+=`<line x1="58" y1="106" x2="34" y2="70" ${c} stroke-width="7" opacity=".45"/><line x1="56" y1="110" x2="88" y2="110" ${c} stroke-width="5" opacity=".6"/><line x1="112" y1="124" x2="131" y2="40" ${c} stroke-width="3" opacity=".55"/><line x1="70" y1="126" x2="112" y2="126" ${c} stroke-width="3" opacity=".3"/>`;
+  if(has('hack')) s+=`<line x1="60" y1="14" x2="100" y2="124" ${c} stroke-width="9" opacity=".4"/><line x1="96" y1="136" x2="152" y2="136" ${c} stroke-width="5" opacity=".5"/>`;
+  if(has('lcurl')) s+=`<rect x="22" y="124" width="106" height="7" rx="3" fill="var(--muted)" opacity=".6"/><line x1="40" y1="131" x2="40" y2="137" ${c} stroke-width="3"/><line x1="116" y1="131" x2="116" y2="137" ${c} stroke-width="3"/><line x1="128" y1="100" x2="128" y2="124" ${c} stroke-width="4" opacity=".5"/>`;
+  if(has('preacher')) s+=`<line x1="80" y1="68" x2="106" y2="94" ${c} stroke-width="9" opacity=".5"/><line x1="98" y1="88" x2="104" y2="137" ${c} stroke-width="4" opacity=".5"/><rect x="50" y="106" width="36" height="6" rx="2" fill="var(--muted)" opacity=".7"/><line x1="68" y1="112" x2="68" y2="137" ${c} stroke-width="3" opacity=".5"/>`;
+  if(has('seatrow')) s+=`<rect x="62" y="108" width="44" height="6" rx="2" fill="var(--muted)" opacity=".7"/><line x1="84" y1="114" x2="84" y2="137" ${c} stroke-width="3" opacity=".6"/><line x1="132" y1="94" x2="132" y2="126" ${c} stroke-width="5" opacity=".6"/>`;
+  return s;
+}
+function animSVG(ex){
+  const P=POSES[ex.move], V=VIS[ex.id]||{}, a=P.a, b=P.b;
+  const main=p=>`M${p.n} L${p.p} M${p.n} L${p.e} L${p.w} M${p.p} L${p.k} L${p.f}`;
+  const leg2=p=>`M${p.p} L${p.k2} L${p.f2}`;
+  const sty='fill="none" stroke="var(--text)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"';
+  const weighted=!P.nw&&(V.w||!['bw','bar'].includes(ex.eq));
+  const wj=P.wj||'w';
+  let cab='';
+  if(V.anc){
+    const aj=V.aj||'w', ax=V.anc[0], ay=V.anc[1];
+    cab=(ax>150?`<line x1="${ax+4}" y1="6" x2="${ax+4}" y2="137" ${MU} stroke-width="4" opacity=".5"/>`:`<line x1="${ax-26}" y1="6" x2="${ax+26}" y2="6" ${MU} stroke-width="4" opacity=".6"/>`)+
+      `<circle cx="${ax}" cy="${ay}" r="4.5" fill="var(--muted)"/><line x1="${ax}" y1="${ay}" x2="${a[aj][0]}" y2="${a[aj][1]}" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="3 2">${ANIM('x2',TRI(a[aj][0],b[aj][0]))}${ANIM('y2',TRI(a[aj][1],b[aj][1]))}</line>`;
+  }
+  return `<svg viewBox="0 0 200 142" role="img" aria-label="Анімація виконання: ${esc(ex.uk)}">${propsSVG(V.pr||P.pr)}${cab}
+    <path d="${leg2(a)}" ${sty} opacity=".5">${ANIM('d',TRI(leg2(a),leg2(b)))}</path>
+    <path d="${main(a)}" ${sty}>${ANIM('d',TRI(main(a),main(b)))}</path>
+    <circle r="8" cx="${a.h[0]}" cy="${a.h[1]}" fill="var(--bg)" stroke="var(--acc)" stroke-width="3.5">${ANIM('cx',TRI(a.h[0],b.h[0]))}${ANIM('cy',TRI(a.h[1],b.h[1]))}</circle>
+    ${weighted?`<circle r="5.5" cx="${a[wj][0]}" cy="${a[wj][1]}" fill="var(--acc)">${ANIM('cx',TRI(a[wj][0],b[wj][0]))}${ANIM('cy',TRI(a[wj][1],b[wj][1]))}</circle>`:''}
+  </svg><small>${V.cap||'Техніка в русі'}</small>`;
+}
+
+/* ============================================================
+   КАРТА М’ЯЗІВ
+============================================================ */
+function bodyMap(ex){
+  const st=m=>ex.prim.includes(m)?1:(ex.sec.includes(m)?.45:0);
+  const fl=m=>st(m)?`fill="${MUSCLES[m].color}" fill-opacity="${st(m)}"`:`fill="var(--muscle-off)"`;
+  const sk=m=>st(m)?`stroke="${MUSCLES[m].color}" stroke-opacity="${st(m)}"`:`stroke="var(--muscle-off)"`;
+  const L=(m,x1,y1,x2,y2,w)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${sk(m)} stroke-width="${w}" stroke-linecap="round"/>`;
+  const E=(m,cx,cy,rx,ry)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" ${fl(m)}/>`;
+  const C=(m,cx,cy,r)=>`<circle cx="${cx}" cy="${cy}" r="${r}" ${fl(m)}/>`;
+  const base=st('cardio')?'rgba(255,146,43,.45)':'var(--body)';
+  const bl=(x1,y1,x2,y2,w)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${base}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const sil=`<circle cx="50" cy="16" r="10" fill="${base}"/><path d="M30 36 Q50 30 70 36 L66 70 Q64 90 62 104 L64 118 L36 118 L38 104 Q36 90 34 70 Z" fill="${base}"/>`+
+    [[26,42,20,70,9],[20,70,16,98,7],[42,120,40,150,14],[40,150,40,194,10]].map(([a,b,c,d,w])=>bl(a,b,c,d,w)+bl(100-a,b,100-c,d,w)).join('');
+  const front=E('chest',41,48,10,7)+E('chest',59,48,10,7)+C('shoulders',28,42,6)+C('shoulders',72,42,6)+
+    L('biceps',25,48,22,66,7)+L('biceps',75,48,78,66,7)+`<rect x="43" y="62" width="14" height="36" rx="5" ${fl('core')}/>`+
+    L('quads',42,124,41,148,12)+L('quads',58,124,59,148,12)+L('calves',40,158,40,184,8)+L('calves',60,158,60,184,8);
+  const back=`<path d="M40 34 Q50 29 60 34 L58 46 L50 54 L42 46 Z" ${fl('back')}/>`+E('back',39,68,8,14)+E('back',61,68,8,14)+E('back',50,92,8,8)+
+    C('shoulders',28,42,6)+C('shoulders',72,42,6)+L('triceps',25,48,22,66,7)+L('triceps',75,48,78,66,7)+
+    E('glutes',42,122,9,8)+E('glutes',58,122,9,8)+L('hamstrings',42,138,41,152,11)+L('hamstrings',58,138,59,152,11)+L('calves',40,160,40,184,9)+L('calves',60,160,60,184,9);
+  return `<svg viewBox="0 0 200 212" role="img" aria-label="Карта задіяних м’язів"><g>${sil+front}</g><g transform="translate(100 0)">${sil+back}</g>
+    <text x="50" y="208" text-anchor="middle" font-size="9" font-weight="700" fill="var(--muted)">Спереду</text><text x="150" y="208" text-anchor="middle" font-size="9" font-weight="700" fill="var(--muted)">Ззаду</text></svg>`;
+}
+
+/* ============================================================
+   ШАБЛОНИ ДНІВ ТА ЛОГІКА ГЕНЕРАЦІЇ
+============================================================ */
+const TEMPLATES={
+  chestTri:{name:'Груди + Трицепс',short:'Груди · Трицепс',slots:[['chest','c'],['chest','c'],['triceps','c'],['chest','i'],['triceps','i'],['chest','a'],['triceps','a'],['core','a']]},
+  backBi:{name:'Спина + Біцепс',short:'Спина · Біцепс',slots:[['back','c'],['back','c'],['back','a'],['biceps','i'],['shoulders','i'],['biceps','a'],['back','a'],['core','a']]},
+  legsGl:{name:'Ноги + Сідниці',short:'Ноги · Сідниці',slots:[['quads','c'],['hamstrings','c'],['quads','c'],['glutes','c'],['hamstrings','i'],['quads','i'],['calves','i'],['core','a'],['glutes','a']]},
+  shCore:{name:'Плечі + Прес',short:'Плечі · Прес',slots:[['shoulders','c'],['shoulders','c'],['shoulders','i'],['shoulders','i'],['core','a'],['back','a'],['core','a'],['calves','i'],['core','a']]},
+  push:{name:'Жим: Груди, Плечі, Трицепс',short:'Груди · Плечі · Трицепс',slots:[['chest','c'],['shoulders','c'],['chest','c'],['triceps','c'],['shoulders','i'],['chest','i'],['triceps','i'],['core','a']]},
+  pull:{name:'Тяга: Спина + Біцепс',short:'Спина · Біцепс',slots:[['back','c'],['back','c'],['back','a'],['biceps','i'],['shoulders','i'],['biceps','a'],['back','a'],['core','a']]},
+  legs:{name:'Ноги + Прес',short:'Ноги · Прес',slots:[['quads','c'],['hamstrings','c'],['glutes','c'],['quads','c'],['calves','i'],['hamstrings','i'],['core','a'],['core','a'],['glutes','a']]},
+  upper:{name:'Верх тіла',short:'Груди · Спина · Плечі · Руки',slots:[['chest','c'],['back','c'],['shoulders','c'],['back','c'],['biceps','i'],['triceps','i'],['chest','i'],['shoulders','i'],['core','a']]},
+  lower:{name:'Низ тіла',short:'Ноги · Сідниці · Прес',slots:[['quads','c'],['hamstrings','c'],['glutes','c'],['quads','c'],['hamstrings','i'],['calves','i'],['core','a'],['core','a'],['glutes','a']]},
+  fullA:{name:'Все тіло A',short:'Все тіло',slots:[['quads','c'],['chest','c'],['back','c'],['shoulders','c'],['hamstrings','c'],['core','a'],['biceps','i'],['triceps','i'],['calves','i']]},
+  fullB:{name:'Все тіло B',short:'Все тіло',slots:[['hamstrings','c'],['back','c'],['chest','c'],['quads','c'],['shoulders','i'],['core','a'],['triceps','i'],['biceps','i'],['glutes','c']]},
+  fullC:{name:'Все тіло C',short:'Все тіло',slots:[['glutes','c'],['chest','c'],['back','c'],['quads','c'],['shoulders','c'],['core','a'],['calves','i'],['back','a'],['chest','a']]}
+};
+const GOALS={
+  mass:{name:'Набір м’язової маси',c:{sets:4,reps:'6-10',rest:120},i:{sets:3,reps:'10-15',rest:75}},
+  fat:{name:'Схуднення та рельєф',c:{sets:3,reps:'12-15',rest:45},i:{sets:3,reps:'15-20',rest:40}},
+  strength:{name:'Збільшення сили',c:{sets:5,reps:'3-6',rest:180},i:{sets:3,reps:'8-12',rest:90}},
+  health:{name:'Підтримання форми та здоров’я',c:{sets:3,reps:'10-12',rest:60},i:{sets:2,reps:'12-15',rest:45}}
+};
+const LEVELS={beginner:{n:1,name:'Початківець'},medium:{n:2,name:'Середній'},advanced:{n:3,name:'Просунутий'}};
+const LIMITS={knee:'Коліна',back:'Поперек',shoulder:'Плечі',wrist:'Зап’ястя',elbow:'Лікті'};
+const EQUIP={db:['Гантелі','dumbbell'],band:['Фітнес-резинки','activity'],bar:['Турнік / Бруси','align-justify'],kb:['Гиря','weight']};
+const WD=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
+
+function dayPlan(c){
+  const L=c.level,d=c.days,g=c.goal;
+  if(d===2) return ['fullA','fullB'];
+  if(d===3) return L==='beginner'?['fullA','fullB','fullC']:['push','pull','legs'];
+  if(d===4) return (L==='beginner'||g==='strength')?['upper','lower','upper','lower']:['chestTri','backBi','legsGl','shCore'];
+  return L==='beginner'?['fullA','upper','lower','fullB','fullC']:['chestTri','backBi','legsGl','shCore','fullC'];
+}
+const okEquip=(ex,c)=>c.location==='gym'||ex.eq==='bw'||c.equip.includes(ex.eq);
+const okRisk=(ex,c)=>!ex.risks.some(r=>c.limits.includes(r))&&!(c.age>=50&&ex.risks.includes('impact'));
+function candidates(m,t,c,relax){
+  const maxL=c.lvl+(relax>=2?1:0);
+  return DB.filter(ex=>!ex.steady&&ex.prim.includes(m)&&(relax>=1||t==='a'||ex.type===t)&&ex.lvl<=maxL&&okEquip(ex,c)&&okRisk(ex,c));
+}
+const famOf=ex=>ex.move+'|'+ex.prim[0];
+function score(ex,c,used,moves,first,m){
+  let s=Math.random()*1.7;
+  if(c.location==='gym') s+={gym:1.2,db:.6,kb:0,bar:0,band:-1.5,bw:-.4}[ex.eq]||0; else s+={db:.5,bar:.5,kb:.3,band:0,bw:0}[ex.eq]||0;
+  s-=(used[ex.id]||0)*2.6; s-=(moves[ex.move]||0)*.9;
+  if(ex.lvl===c.lvl) s+=.4; if(ex.prim[0]===m) s+=.5; if(first) s+=ex.lvl*.15+(ex.type==='c'?.3:0);
+  return s;
+}
+function pick(m,t,c,used,inDay,moves,first,fams){
+  for(const strict of (t==='a'?[true]:[true,false])) for(let relax=0;relax<3;relax++){
+    const list=candidates(m,t,c,relax).filter(ex=>!inDay.has(ex.id)&&(!strict||!fams.has(famOf(ex))));
+    if(list.length) return list.map(ex=>({ex,s:score(ex,c,used,moves,first,m)})).sort((a,b)=>b.s-a.s)[0].ex;
+  }
+  return null;
+}
+function pickMachine(c,used,inDay,exclude){
+  const list=DB.filter(ex=>ex.steady&&okEquip(ex,c)&&okRisk(ex,c)&&ex.lvl<=c.lvl+1&&!inDay.has(ex.id)&&!exclude.has(ex.id));
+  if(!list.length) return null;
+  return list.map(ex=>({ex,s:Math.random()*2-(used[ex.id]||0)*2.6})).sort((a,b)=>b.s-a.s)[0].ex;
+}
+function params(ex,c,role){
+  const g=c.goal; let {sets,reps,rest}={...GOALS[g][ex.type]}; let isTime=false;
+  if(ex.steady){
+    const fin=role==='fin', lo=fin?(c.level==='beginner'?10:12):(c.level==='beginner'?5:6), hi=lo+(fin?5:4);
+    return {sets:1,reps:`${lo}-${hi} хв`,rest:0,isTime:true,steady:true,mins:(lo+hi)/2,role:fin?'fin':'warm'};
+  }
+  if(HOLD.includes(ex.id)){ reps=c.level==='beginner'?'20-30 с':c.level==='medium'?'30-45 с':'45-60 с'; sets=Math.max(2,Math.min(sets,3)); rest=Math.min(rest,45); isTime=true; }
+  else if(ex.prim.includes('cardio')){ sets=c.level==='advanced'?4:3; reps='30-40 с'; rest=30; isTime=true; }
+  else if(ex.prim[0]==='core'){ reps=g==='strength'?'10-15':'15-20'; sets=Math.min(sets,3); rest=Math.min(rest,45); }
+  else if(ex.prim[0]==='calves'){ reps='15-20'; sets=Math.min(sets,4); rest=Math.min(rest,45); }
+  else if((ex.eq==='bw'||ex.eq==='bar')&&ex.type==='c'){ if(g==='strength') reps='6-10'; else if(g==='mass') reps='8-15'; }
+  if(!isTime){
+    if(c.level==='beginner') sets=Math.max(2,sets-1);
+    if(c.level==='advanced'&&ex.type==='c'&&(g==='mass'||g==='strength')) sets=Math.min(5,sets+1);
+    if(c.level==='beginner'&&g==='strength'&&ex.type==='c'&&!['bw','bar'].includes(ex.eq)) reps='5-8';
+  }
+  if(c.duration<=30) sets=Math.max(2,sets-1);
+  if(c.age>=50) rest+=15;
+  return {sets,reps,rest,isTime};
+}
+const exTime=p=>p.steady?p.mins+.5:p.sets*((p.isTime?45:40)+p.rest)/60+.8;
+
+function generate(c){
+  const used={}; const plan=dayPlan(c);
+  const wds={2:[0,3],3:[0,2,4],4:[0,1,3,4],5:[0,1,2,3,4]}[c.days];
+  const days=plan.map((key,i)=>{
+    const T=TEMPLATES[key], inDay=new Set(), moves={}, items=[], fams=new Set(), machines=new Set();
+    let total=0; const avail=c.duration-6-(c.goal==='fat'?5:0);
+    const uniq=[...new Set(T.slots.map(s=>s[0]))];
+    const slots=T.slots.slice(); for(let r=0;r<14;r++) slots.push([uniq[r%uniq.length],'a']);
+    const add=(ex,m,t,role)=>{const par=params(ex,c,role); items.push({id:ex.id,...par,slotM:m,slotT:t}); inDay.add(ex.id); fams.add(famOf(ex)); moves[ex.move]=(moves[ex.move]||0)+1; used[ex.id]=(used[ex.id]||0)+1; total+=exTime(par);};
+    if(c.location==='gym'){ const wu=pickMachine(c,used,inDay,machines); if(wu){ machines.add(wu.id); add(wu,'cardio','a','warm'); } }
+    const base=items.length;
+    for(const [m,t] of slots){
+      if(items.length>=10+base) break;
+      const ex=pick(m,t,c,used,inDay,moves,items.length===base,fams); if(!ex) continue;
+      if(items.length>=4+base&&total+exTime(params(ex,c))>avail+1.5) continue;
+      add(ex,m,t);
+    }
+    if(c.goal==='fat'){
+      const cx=c.location==='gym'?pickMachine(c,used,inDay,machines):pick('cardio','a',c,used,inDay,moves,false,fams);
+      if(cx) add(cx,'cardio','a',c.location==='gym'?'fin':undefined);
+    }
+    return {key,name:T.name,short:T.short,wd:wds[i],items,timeMin:Math.round(total+6)};
+  });
+  return {created:Date.now(),ctx:c,days,stats:calcStats(c)};
+}
+function calcStats(c){
+  const bmi=c.weight/Math.pow(c.height/100,2);
+  const cat=bmi<18.5?'Дефіцит ваги':bmi<25?'Норма':bmi<30?'Надлишок ваги':'Ожиріння';
+  const bmr=10*c.weight+6.25*c.height-5*c.age+(c.gender==='male'?5:-161);
+  const act={2:1.375,3:1.45,4:1.55,5:1.65}[c.days];
+  const kcal=Math.round(bmr*act*{mass:1.1,fat:.8,strength:1.05,health:1}[c.goal]/10)*10;
+  const protein=Math.round(c.weight*{mass:1.8,fat:2,strength:1.8,health:1.4}[c.goal]);
+  return {bmi:bmi.toFixed(1),cat,kcal,protein};
+}
+function swapAlternative(c,day,item){
+  const cur=DB_BY_ID[item.id], m=cur.prim[0];
+  const inDay=new Set(day.items.map(i=>i.id)); const inProg=new Set(state.program.days.flatMap(d=>d.items.map(i=>i.id)));
+  if(cur.steady){
+    let list=DB.filter(ex=>ex.steady&&okEquip(ex,c)&&okRisk(ex,c)&&ex.lvl<=c.lvl+1&&!inDay.has(ex.id)&&ex.id!==cur.id);
+    const fresh=list.filter(ex=>!inProg.has(ex.id)); if(fresh.length) list=fresh;
+    return list.length?list[Math.floor(Math.random()*list.length)]:null;
+  }
+  const dayFams=new Set(day.items.filter(i=>i.id!==cur.id).map(i=>famOf(DB_BY_ID[i.id])));
+  for(let relax=0;relax<3;relax++){
+    let list=candidates(m,item.slotT==='a'?'a':cur.type,c,relax).filter(ex=>!inDay.has(ex.id)&&ex.id!==cur.id);
+    if(!list.length) continue;
+    const diff=list.filter(ex=>!dayFams.has(famOf(ex))); if(diff.length) list=diff;
+    const fresh=list.filter(ex=>!inProg.has(ex.id)); if(fresh.length) list=fresh;
+    return list[Math.floor(Math.random()*list.length)];
+  }
+  return null;
+}
+
+/* ============================================================
+   СТАН
+============================================================ */
+const LS='forge_state_v1';
+const defaultForm=()=>({location:null,equip:[],gender:null,age:'',weight:'',height:'',level:'beginner',goal:null,days:3,duration:60,limits:[],note:''});
+const state={step:1,max:1,activeDay:0,form:defaultForm(),program:null,progress:{},saved:null};
+function save(){try{localStorage.setItem(LS,JSON.stringify({form:state.form,program:state.program,progress:state.progress,activeDay:state.activeDay}));}catch(e){}}
+function loadSaved(){try{const s=JSON.parse(localStorage.getItem(LS));if(s&&s.form)return s;}catch(e){}return null;}
+const buildCtx=f=>({location:f.location,equip:f.equip.slice(),gender:f.gender,age:+f.age,weight:+f.weight,height:+f.height,level:f.level,lvl:LEVELS[f.level].n,goal:f.goal,days:+f.days,duration:+f.duration,limits:f.limits.slice(),note:(f.note||'').trim()});
+
+/* ============================================================
+   РЕНДЕР КРОКІВ
+============================================================ */
+const optBtn=(act,val,sel,icon,title,desc='',cls='')=>`<button type="button" class="opt ${sel?'sel':''} ${cls}" data-act="${act}" data-v="${val}">${icon?`<span class="oi">${ic(icon)}</span>`:''}<span class="ot"><b>${title}</b>${desc?`<small>${desc}</small>`:''}</span><span class="ck">${ic('check')}</span></button>`;
+
+function step1(){
+  const f=state.form, sv=state.saved&&state.saved.program;
+  return `
+  ${sv?`<div class="banner glass"><div><b>Знайдено збережену програму</b><div class="small-muted">${GOALS[state.saved.program.ctx.goal].name} · ${state.saved.program.ctx.days} тренування на тиждень</div></div><button class="btn btn-primary btn-sm" data-act="resume">${ic('play')} Продовжити</button></div>`:''}
+  <div class="hero">
+    <span class="kicker">${ic('zap')} Крок 1 з 3</span>
+    <h1 class="h1" style="margin-top:.6rem">Де будемо <span class="acc">тренуватись?</span></h1>
+    <p class="lead">Обери місце — програму підберемо під доступне обладнання, а вправи покажемо з анімацією техніки.</p>
+  </div>
+  <div class="grid2">
+    ${optBtn('loc','gym',f.location==='gym','dumbbell','Тренувальний зал','Штанги, тренажери, блоки та гантелі — повний арсенал','big')}
+    ${optBtn('loc','home',f.location==='home','home','Вдома','Мінімум обладнання — програма під те, що в тебе є','big')}
+  </div>
+  ${f.location==='home'?`
+  <div class="glass panel-in enter">
+    <div class="sec-title" style="margin-top:0">${ic('package-check')} Що є вдома?</div>
+    <div class="grid2">
+      <div class="opt sel locked sm"><span class="oi">${ic('user')}</span><span class="ot"><b>Власна вага</b><small>Завжди доступна</small></span><span class="ck">${ic('check')}</span></div>
+      ${Object.entries(EQUIP).map(([k,[n,i]])=>optBtn('equip',k,f.equip.includes(k),i,n,'','sm')).join('')}
+    </div>
+  </div>`:''}
+  <div class="nav-row"><span></span><button class="btn btn-primary" data-act="next" ${f.location?'':'disabled'}>Далі ${ic('arrow-right')}</button></div>`;
+}
+
+function step2(){
+  const f=state.form;
+  const num=(id,label,unit,val,ph)=>`<div class="field" id="fld-${id}"><label for="in-${id}">${label}</label><div class="inwrap"><input id="in-${id}" data-field="${id}" type="number" inputmode="decimal" placeholder="${ph}" value="${esc(val)}"><span>${unit}</span></div><div class="err" id="err-${id}"></div></div>`;
+  return `
+  <div class="hero">
+    <span class="kicker">${ic('user')} Крок 2 з 3</span>
+    <h1 class="h1" style="margin-top:.6rem">Розкажи <span class="acc">про себе</span></h1>
+    <p class="lead">Чим точніше анкета — тим розумніше програма. Дані зберігаються лише у твоєму браузері.</p>
+  </div>
+
+  <div class="sec-title">Стать</div>
+  <div class="grid2">${optBtn('gender','male',f.gender==='male','user','Чоловік','','sm')}${optBtn('gender','female',f.gender==='female','user-round','Жінка','','sm')}</div>
+  <div class="err" id="err-gender"></div>
+
+  <div class="sec-title">Параметри тіла</div>
+  <div class="grid3">${num('age','Вік','років',f.age,'25')}${num('weight','Вага','кг',f.weight,'75')}${num('height','Зріст','см',f.height,'178')}</div>
+
+  <div class="sec-title">Рівень підготовки</div>
+  <div class="grid3">
+    ${optBtn('level','beginner',f.level==='beginner','sprout','Початківець','Менше 6 місяців досвіду')}
+    ${optBtn('level','medium',f.level==='medium','flame','Середній','Півроку – 2 роки регулярних тренувань')}
+    ${optBtn('level','advanced',f.level==='advanced','trophy','Просунутий','Понад 2 роки, впевнена техніка')}
+  </div>
+
+  <div class="sec-title">Головна мета</div>
+  <div class="grid2">
+    ${optBtn('goal','mass',f.goal==='mass','biceps-flexed','Набір м’язової маси','Більше об’єму та розмірів')}
+    ${optBtn('goal','fat',f.goal==='fat','flame-kindling','Схуднення та рельєф','Висока щільність, кардіо-фініш')}
+    ${optBtn('goal','strength',f.goal==='strength','weight','Збільшення сили','Базові вправи, великі ваги')}
+    ${optBtn('goal','health',f.goal==='health','heart-pulse','Форма та здоров’я','Збалансоване тіло й самопочуття')}
+  </div>
+  <div class="err" id="err-goal"></div>
+
+  <div class="sec-title">Графік</div>
+  <div class="small-muted" style="margin-bottom:.5rem">Тренувань на тиждень</div>
+  <div class="pills">${[2,3,4,5].map(d=>`<button class="pill ${+f.days===d?'sel':''}" data-act="days" data-v="${d}">${d}</button>`).join('')}</div>
+  <div class="small-muted" style="margin:.9rem 0 .5rem">Тривалість тренування</div>
+  <div class="pills">${[30,45,60,90].map(d=>`<button class="pill ${+f.duration===d?'sel':''}" data-act="dur" data-v="${d}">${d} хв</button>`).join('')}</div>
+
+  <div class="sec-title">Травми та обмеження</div>
+  <div class="small-muted" style="margin-bottom:.6rem">Обери проблемні зони — небезпечні вправи буде виключено з програми.</div>
+  <div class="pills">${Object.entries(LIMITS).map(([k,n])=>`<button class="pill ${f.limits.includes(k)?'sel':''}" data-act="limit" data-v="${k}">${n}</button>`).join('')}</div>
+  <div class="field" style="margin-top:.9rem"><label for="in-note">Додаткові побажання (необов’язково)</label><input class="txt" id="in-note" data-field="note" type="text" maxlength="140" placeholder="Напр.: віддаю перевагу короткому відпочинку" value="${esc(f.note)}"></div>
+
+  <div class="nav-row">
+    <button class="btn btn-ghost" data-act="back">${ic('arrow-left')} Назад</button>
+    <button class="btn btn-primary" data-act="gen">${ic('sparkles')} Згенерувати</button>
+  </div>`;
+}
+
+function loaderView(){
+  return `<div class="loader enter"><div class="bell">${ic('dumbbell')}</div><div><h2 class="h2">Збираємо твою програму</h2><p class="lead" id="loadMsg" style="margin:.6rem auto 0">Аналізуємо анкету…</p></div></div>`;
+}
+
+function weekStrip(p){
+  return `<div class="week">${WD.map((n,i)=>{
+    const di=p.days.findIndex(d=>d.wd===i);
+    if(di<0) return `<div class="wcell rest"><b>${n}</b><span>Відпочинок</span></div>`;
+    const d=p.days[di];
+    return `<button class="wcell ${di===state.activeDay?'sel':''}" data-act="tab" data-i="${di}" data-scroll="1"><b>${n}</b><em>День ${di+1}</em><span>${d.short}</span></button>`;
+  }).join('')}</div>`;
+}
+
+function exCard(it,di,ei){
+  const ex=DB_BY_ID[it.id], key=`${di}-${ei}`, done=state.progress[key]||0;
+  const tags=ex.prim.map(m=>`<span class="mtag" style="--c:${MUSCLES[m].color}">${MUSCLES[m].uk}</span>`).join('')+
+             ex.sec.map(m=>`<span class="mtag sec" style="--c:${MUSCLES[m].color}">${MUSCLES[m].uk}</span>`).join('');
+  return `<article class="ex-card glass" data-d="${di}" data-e="${ei}">
+    <div class="ex-top"><span class="ex-num">${ei+1}</span><div><h3>${ex.uk}</h3><p class="en">${ex.en}</p></div></div>
+    <div class="ex-media"><div class="anim">${animSVG(ex)}</div><div class="mmap">${bodyMap(ex)}</div></div>
+    <div class="chips" style="margin:0">${tags}</div>
+    <div class="params">
+      ${it.steady?`<div class="pbox"><small>Режим</small><b>${it.role==='fin'?'Фініш':'Розминка'}</b></div>
+      <div class="pbox"><small>Час</small><b>${it.reps}</b></div>
+      <div class="pbox"><small>Пульс</small><b>${it.role==='fin'?'65–75%':'55–65%'}</b></div>`:`<div class="pbox"><small>Підходи</small><b>${it.sets}</b></div>
+      <div class="pbox"><small>${it.isTime?'Час':'Повторення'}</small><b>${it.reps}</b></div>
+      <div class="pbox"><small>Відпочинок</small><b>${it.rest} с</b></div>`}
+    </div>
+    <div class="setrow"><small>Виконано:</small>${Array.from({length:it.sets},(_,k)=>`<button class="setpill ${done>k?'done':''}" data-act="set" data-d="${di}" data-e="${ei}" data-k="${k+1}" aria-label="${it.steady?'Виконано':'Підхід '+(k+1)}" ${it.steady?'style="width:auto;padding:0 1rem;border-radius:20px"':''}>${it.steady?'✓ Готово':k+1}</button>`).join('')}</div>
+    <div class="actions no-print">
+      ${it.steady?'':`<button class="btn btn-ghost btn-sm" data-act="rest" data-d="${di}" data-e="${ei}">${ic('timer')} Відпочинок ${it.rest} с</button>`}
+      <button class="btn btn-ghost btn-sm" data-act="swap" data-d="${di}" data-e="${ei}">${ic('repeat')} Замінити вправу</button>
+    </div>
+    <details class="det" open>
+      <summary>Техніка виконання та безпека</summary>
+      <ol>${ex.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      <div class="safety">${ic('triangle-alert')}<span><b>Безпека:</b> ${ex.safety}.</span></div>
+    </details>
+  </article>`;
+}
+function dayPanel(di){
+  const d=state.program.days[di];
+  const muscles=[...new Set(d.items.flatMap(i=>DB_BY_ID[i.id].prim))].filter(m=>m!=='cardio'||state.program.ctx.goal==='fat');
+  return `<section class="day-panel ${di===state.activeDay?'active':''}" id="day-${di}" data-d="${di}">
+    <div class="day-head glass">
+      <span class="kicker">${ic('calendar')} День ${di+1} · ${WD[d.wd]}</span>
+      <h2 class="h2" style="margin-top:.4rem">${d.name}</h2>
+      <div class="small-muted" style="margin-top:.3rem">${d.items.length} вправ · ~${d.timeMin} хв разом із розминкою</div>
+      <div class="chips">${muscles.map(m=>`<span class="mtag" style="--c:${MUSCLES[m].color}">${MUSCLES[m].uk}</span>`).join('')}</div>
+      <div class="bar"><i id="bar-${di}"></i></div>
+      <div class="small-muted" id="barTxt-${di}" style="margin-top:.4rem"></div>
+      <div class="note">${ic('flame')} <b>Розминка 5 хв:</b> легке кардіо, колові рухи суглобами та 1–2 розминочні підходи з малою вагою першої вправи.</div>
+    </div>
+    <div class="cards">${d.items.map((it,ei)=>exCard(it,di,ei)).join('')}</div>
+    <div class="note">${ic('wind')} <b>Заминка 3–5 хв:</b> повільна ходьба та розтяжка задіяних м’язових груп по 20–30 секунд.</div>
+  </section>`;
+}
+function updateProgress(di){
+  const d=state.program.days[di]; let tot=0,done=0;
+  d.items.forEach((it,ei)=>{tot+=it.sets;done+=Math.min(it.sets,state.progress[`${di}-${ei}`]||0);});
+  const b=$(`#bar-${di}`); if(b) b.style.width=(tot?done/tot*100:0)+'%';
+  const t=$(`#barTxt-${di}`); if(t) t.textContent=`Прогрес тренування: ${done} / ${tot} підходів`+(done===tot&&tot?' — тренування завершено! 🔥':'');
+}
+function step3(){
+  const p=state.program, c=p.ctx, s=p.stats;
+  const limTxt=c.limits.length?`Враховано обмеження: ${c.limits.map(l=>LIMITS[l].toLowerCase()).join(', ')} — відповідні вправи виключено.`:'';
+  return `
+  <div class="print-only"><h1 class="h2">Fitness Generator · Програма тренувань</h1><p>${GOALS[c.goal].name} · ${LEVELS[c.level].name} · ${c.days} дн/тиж · ${c.gender==='male'?'чол.':'жін.'}, ${c.age} р., ${c.weight} кг, ${c.height} см · ${new Date(p.created).toLocaleDateString('uk-UA')}</p></div>
+  <div class="res-head glass">
+    <div>
+      <span class="kicker">${ic('check-circle-2')} Програму готово</span>
+      <h1 class="h1" style="font-size:clamp(1.4rem,5vw,2.2rem);margin-top:.5rem">${GOALS[c.goal].name}</h1>
+      <p class="small-muted" style="margin:.4rem 0 0">${LEVELS[c.level].name} · ${c.location==='gym'?'Тренувальний зал':'Вдома'+(c.equip.length?' + '+c.equip.map(e=>EQUIP[e][0].toLowerCase()).join(', '):' (власна вага)')} · до ${c.duration} хв</p>
+    </div>
+    <div class="head-actions no-print">
+      <button class="btn btn-primary btn-sm" data-act="print">${ic('printer')} PDF / Друк</button>
+      <button class="btn btn-ghost btn-sm" data-act="regen">${ic('refresh-cw')} Перегенерувати</button>
+      <button class="btn btn-ghost btn-sm" data-act="edit">${ic('pencil')} Змінити анкету</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="glass stat"><small>ІМТ</small><b>${s.bmi}</b><em>${s.cat}</em></div>
+    <div class="glass stat"><small>Калорії / день</small><b>~${s.kcal}</b><em>орієнтовно</em></div>
+    <div class="glass stat"><small>Білок / день</small><b>~${s.protein} г</b><em>орієнтовно</em></div>
+    <div class="glass stat"><small>Тренувань</small><b>${c.days} / тиж</b><em>${p.days[0].timeMin} хв у середньому</em></div>
+  </div>
+  ${limTxt?`<div class="note">${ic('shield-check')} ${limTxt}</div>`:''}
+  ${c.note?`<div class="note">${ic('message-square')} Побажання: ${esc(c.note)}</div>`:''}
+  <div class="sec-title sec-week">${ic('calendar-days')} Тижневий розклад</div>
+  <div class="sec-week" id="weekWrap">${weekStrip(p)}</div>
+  <div class="sec-title no-print">${ic('list-checks')} Тренування</div>
+  <div class="tabs no-print" id="tabs">${p.days.map((d,i)=>`<button class="tab ${i===state.activeDay?'sel':''}" data-act="tab" data-i="${i}">День ${i+1} · ${d.name}</button>`).join('')}</div>
+  ${p.days.map((_,i)=>dayPanel(i)).join('')}
+  <div class="glass tip">
+    <b>${ic('lightbulb')} Як працювати з програмою</b>
+    <ul>
+      <li>Підбирай вагу так, щоб останні 1–2 повтори в підході давались складно, але з гарною технікою.</li>
+      <li>Відмічай виконані підходи — таймер відпочинку запуститься автоматично.</li>
+      <li>Коли всі підходи стають легкими, збільшуй вагу на 2–5% або додавай 1–2 повтори.</li>
+      <li>Пий воду, спи 7–9 годин. Якщо є захворювання — проконсультуйся з лікарем. Це не медична порада.</li>
+    </ul>
+  </div>
+  <div class="nav-row no-print"><button class="btn btn-ghost" data-act="reset">${ic('rotate-ccw')} Почати спочатку</button><span></span></div>`;
+}
+
+/* ============================================================
+   НАВІГАЦІЯ
+============================================================ */
+function renderStepper(){
+  const names=['Обладнання','Анкета','Програма'], s=state.step;
+  $('#stepper').innerHTML=`<div class="st-line"><i style="width:${(s-1)*50}%"></i></div>`+names.map((n,i)=>{
+    const k=i+1, can=k<=state.max&&(k<3||state.program);
+    return `<button class="st ${k===s?'cur':''} ${k<s?'done':''}" ${can?`data-act="goto" data-s="${k}"`:'disabled'}><span>${k<s?ic('check'):k}</span><em>${n}</em></button>`;
+  }).join('');
+}
+function render(animate=true){
+  renderStepper();
+  const v=$('#view'); v.classList.remove('enter'); void v.offsetWidth;
+  v.innerHTML=state.step===1?step1():state.step===2?step2():step3();
+  if(animate) v.classList.add('enter');
+  refreshIcons();
+  if(state.step===3) state.program.days.forEach((_,i)=>updateProgress(i));
+}
+function setStep(n){
+  state.step=n; state.max=Math.max(state.max,n); render(true); window.scrollTo({top:0,behavior:'smooth'}); save();
+}
+function validate(){
+  const f=state.form, e={};
+  if(!f.gender) e.gender='Обери стать';
+  const age=+f.age; if(!(age>=14&&age<=80)) e.age='Вік: 14–80 років';
+  const w=+f.weight; if(!(w>=35&&w<=250)) e.weight='Вага: 35–250 кг';
+  const h=+f.height; if(!(h>=130&&h<=230)) e.height='Зріст: 130–230 см';
+  if(!f.goal) e.goal='Обери головну мету';
+  return e;
+}
+function showErrors(err){
+  ['gender','age','weight','height','goal'].forEach(k=>{const el=$('#err-'+k); if(el) el.textContent=err[k]||''; const fl=$('#fld-'+k); if(fl) fl.classList.toggle('invalid',!!err[k]);});
+  const first=['gender','age','weight','height','goal'].find(k=>err[k]);
+  if(first){ const el=$('#err-'+first); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); toast('Заповни обов’язкові поля'); }
+}
+function startGenerate(){
+  const v=$('#view'); v.innerHTML=loaderView(); refreshIcons(); window.scrollTo({top:0,behavior:'smooth'});
+  const msgs=['Аналізуємо анкету…','Підбираємо вправи під обладнання…','Враховуємо обмеження та рівень…','Розраховуємо підходи та відпочинок…','Збираємо розклад на тиждень…'];
+  let i=0; const iv=setInterval(()=>{i=(i+1)%msgs.length;const m=$('#loadMsg');if(m)m.textContent=msgs[i];},420);
+  setTimeout(()=>{
+    clearInterval(iv);
+    state.program=generate(buildCtx(state.form)); state.progress={}; state.activeDay=0; state.max=3;
+    setStep(3);
+  },1700);
+}
+
+/* ============================================================
+   ОБРОБНИК ПОДІЙ
+============================================================ */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]'); if(!t) return;
+  const act=t.dataset.act, f=state.form, v=t.dataset.v;
+  switch(act){
+    case 'loc': f.location=v; if(v==='gym') f.equip=[]; save(); render(false); break;
+    case 'equip': f.equip=f.equip.includes(v)?f.equip.filter(x=>x!==v):[...f.equip,v]; render(false); break;
+    case 'gender': f.gender=v; render(false); break;
+    case 'level': f.level=v; render(false); break;
+    case 'goal': f.goal=v; render(false); break;
+    case 'days': f.days=+v; render(false); break;
+    case 'dur': f.duration=+v; render(false); break;
+    case 'limit': f.limits=f.limits.includes(v)?f.limits.filter(x=>x!==v):[...f.limits,v]; render(false); break;
+    case 'next': if(state.step===1&&f.location) setStep(2); break;
+    case 'back': setStep(Math.max(1,state.step-1)); break;
+    case 'goto': { const s=+t.dataset.s; if(s===3&&!state.program) break; setStep(s); break; }
+    case 'gen': { const err=validate(); if(Object.keys(err).length){showErrors(err);break;} save(); startGenerate(); break; }
+    case 'edit': setStep(2); break;
+    case 'resume': { const sv=state.saved; state.program=sv.program; state.progress=sv.progress||{}; state.activeDay=Math.min(sv.activeDay||0,sv.program.days.length-1); state.max=3; setStep(3); break; }
+    case 'regen': state.program=generate(state.program.ctx); state.progress={}; state.activeDay=0; save(); render(true); window.scrollTo({top:0,behavior:'smooth'}); toast('Програму перегенеровано'); break;
+    case 'reset': if(confirm('Почати спочатку? Збережену програму буде видалено.')){ state.form=defaultForm(); state.program=null; state.progress={}; state.activeDay=0; state.max=1; state.saved=null; try{localStorage.removeItem(LS);}catch(e){} setStep(1);} break;
+    case 'print': window.print(); break;
+    case 'tab': {
+      const i=+t.dataset.i; state.activeDay=i;
+      $$('.day-panel').forEach(p=>p.classList.toggle('active',+p.dataset.d===i));
+      $$('.tab').forEach((b,k)=>b.classList.toggle('sel',k===i));
+      $('#weekWrap').innerHTML=weekStrip(state.program);
+      if(t.dataset.scroll||t.classList.contains('tab')) $('#tabs').scrollIntoView({behavior:'smooth',block:'start'});
+      save(); break;
+    }
+    case 'set': {
+      const d=+t.dataset.d, ei=+t.dataset.e, k=+t.dataset.k, key=`${d}-${ei}`, it=state.program.days[d].items[ei];
+      const cur=state.progress[key]||0, nv=(k===cur)?k-1:k; state.progress[key]=nv;
+      $$('.setpill',t.closest('.setrow')).forEach((b,idx)=>b.classList.toggle('done',idx<nv));
+      updateProgress(d); save();
+      if(nv>cur){ if(nv<it.sets){ if($('#optAuto').checked) Timer.start(it.rest,DB_BY_ID[it.id].uk); } else toast('Вправу завершено — відмінно! 💪'); }
+      break;
+    }
+    case 'rest': { const it=state.program.days[+t.dataset.d].items[+t.dataset.e]; Timer.start(it.rest,DB_BY_ID[it.id].uk); break; }
+    case 'swap': {
+      const d=+t.dataset.d, ei=+t.dataset.e, day=state.program.days[d], it=day.items[ei];
+      const alt=swapAlternative(state.program.ctx,day,it);
+      if(!alt){ toast('Для цієї вправи альтернатив не знайдено'); break; }
+      const par=params(alt,state.program.ctx,it.role);
+      day.items[ei]={id:alt.id,...par,slotM:it.slotM,slotT:it.slotT}; state.progress[`${d}-${ei}`]=0;
+      const sec=$(`#day-${d}`); const wasActive=sec.classList.contains('active');
+      sec.outerHTML=dayPanel(d); const ns=$(`#day-${d}`); if(!wasActive) ns.classList.remove('active'); ns.classList.remove('active'); if(+state.activeDay===d) ns.classList.add('active');
+      refreshIcons(); updateProgress(d); save();
+      $(`.ex-card[data-d="${d}"][data-e="${ei}"]`).scrollIntoView({behavior:'smooth',block:'center'});
+      toast('Вправу замінено: '+alt.uk); break;
+    }
+    case 'theme-set': { document.documentElement.dataset.theme=v; try{localStorage.setItem('forge_theme',v);}catch(e){} syncTheme(); toast(v==='dark'?'Темна тема':'Світла тема'); break; }
+    case 'accent-set': { document.documentElement.dataset.accent=v; try{localStorage.setItem('forge_accent',v);}catch(e){} syncTheme(); break; }
+    case 'timer-toggle': $('#timerPanel').classList.contains('open')?Timer.close():Timer.open(); break;
+    case 'timer-close': Timer.close(); break;
+    case 'tpreset': Timer.set(+t.dataset.s); break;
+    case 'tplay': Timer.toggle(); break;
+    case 'treset': Timer.reset(); break;
+    case 'tadd': Timer.add(+t.dataset.s); break;
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target; if(!t.dataset||!t.dataset.field) return;
+  state.form[t.dataset.field]=t.value;
+  const fl=$('#fld-'+t.dataset.field); if(fl) fl.classList.remove('invalid'); const er=$('#err-'+t.dataset.field); if(er) er.textContent='';
+  save();
+});
+
+/* ============================================================
+   ТЕМА
+============================================================ */
+function syncTheme(){
+  const dark=document.documentElement.dataset.theme==='dark';
+  const ac=document.documentElement.dataset.accent;
+  $('#thDark').classList.toggle('on',dark); $('#thLight').classList.toggle('on',!dark);
+  $('#thDark').setAttribute('aria-pressed',dark); $('#thLight').setAttribute('aria-pressed',!dark);
+  $('#acLime').classList.toggle('on',ac==='lime'); $('#acOrange').classList.toggle('on',ac==='orange');
+  const m=document.querySelector('meta[name=theme-color]'); if(m) m.content=dark?'#121212':'#f3f1ea';
+}
+
+/* ============================================================
+   ТАЙМЕР ВІДПОЧИНКУ
+============================================================ */
+let ac=null;
+function initAudio(){ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); }catch(e){} }
+function beep(freq,dur,when){
+  if(!ac) return;
+  const o=ac.createOscillator(), g=ac.createGain(), t0=ac.currentTime+when;
+  o.type='sine'; o.frequency.value=freq;
+  g.gain.setValueAtTime(.001,t0); g.gain.exponentialRampToValueAtTime(.45,t0+.02); g.gain.exponentialRampToValueAtTime(.001,t0+dur);
+  o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+const RING=2*Math.PI*70;
+const Timer={
+  total:60,left:60,running:false,end:0,iv:null,label:'',_ic:null,
+  open(){ $('#timerPanel').classList.add('open'); $('#timerPanel').setAttribute('aria-hidden','false'); this.ui(); },
+  close(){ $('#timerPanel').classList.remove('open'); $('#timerPanel').setAttribute('aria-hidden','true'); },
+  set(s){ this.total=s; this.left=s; this.running=false; clearInterval(this.iv); this.ui(); },
+  start(s,label){ if(s!=null){this.total=s;this.left=s;} if(label!==undefined) this.label=label; this.open(); this.resume(); },
+  resume(){ if(this.left<=0) this.left=this.total; initAudio(); this.running=true; this.end=Date.now()+this.left*1000; clearInterval(this.iv); this.iv=setInterval(()=>this.tick(),200); this.ui(); },
+  pause(){ this.tick(); this.running=false; clearInterval(this.iv); this.ui(); },
+  toggle(){ this.running?this.pause():this.resume(); },
+  reset(){ this.running=false; clearInterval(this.iv); this.left=this.total; this.ui(); },
+  add(d){ if(this.running){ this.end+=d*1000; this.left=Math.max(1,Math.ceil((this.end-Date.now())/1000)); } else this.left=Math.max(5,this.left+d); if(this.left>this.total) this.total=this.left; this.ui(); },
+  tick(){ if(!this.running) return; this.left=Math.max(0,Math.ceil((this.end-Date.now())/1000)); if(this.left<=0) this.finish(); this.ui(); },
+  finish(){
+    this.running=false; clearInterval(this.iv); this.left=0;
+    if($('#optSound').checked){ initAudio(); beep(880,.18,0); beep(880,.18,.28); beep(1175,.4,.56); }
+    if(navigator.vibrate) try{navigator.vibrate([250,120,250,120,400]);}catch(e){}
+    $('#timerPanel').classList.add('done'); $('#timerFab').classList.add('done');
+    toast('Відпочинок завершено — наступний підхід!');
+    setTimeout(()=>{$('#timerPanel').classList.remove('done');$('#timerFab').classList.remove('done');},3500);
+  },
+  ui(){
+    $('#tTime').textContent=fmt(this.left);
+    $('#ringFg').style.strokeDashoffset=RING*(1-(this.total?this.left/this.total:0));
+    $('#tLabel').textContent=this.label?('Відпочинок: '+this.label):'Обери час і натисни старт';
+    $('#fabTime').textContent=this.running?fmt(this.left):'відпочинок';
+    document.title=this.running?`${fmt(this.left)} · Fitness Generator`:'Fitness Generator';
+    if(this._ic!==this.running){ this._ic=this.running; $('#tPlay').innerHTML=ic(this.running?'pause':'play'); refreshIcons(); }
+  }
+};
+
+/* ============================================================
+   СТАРТ
+============================================================ */
+(function init(){
+  try{
+    const th=localStorage.getItem('forge_theme'), ac2=localStorage.getItem('forge_accent');
+    if(th) document.documentElement.dataset.theme=th; if(ac2) document.documentElement.dataset.accent=ac2;
+  }catch(e){}
+  const sv=loadSaved();
+  if(sv){ state.form={...defaultForm(),...sv.form}; if(sv.program) state.saved=sv; }
+  syncTheme(); Timer.ui(); render(true);
+})();
+window.addEventListener('load',refreshIcons);
+</script>
+</body>
+</html>
